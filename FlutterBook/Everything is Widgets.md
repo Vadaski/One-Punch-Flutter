@@ -1,4 +1,4 @@
-# Everything is Widgets 
+# X - Everything is Widgets 
 
 ## 前言
 
@@ -6,12 +6,12 @@
 
 实际上 Widget 有很多相通之处，当你对其中的基本组件熟悉之后，你会发现这种构建 UI 的方式非常的灵活、自由，能够让我们真正无拘无束地开发出奇妙的 UI 而不只是局限常规。任何复杂的事物都是由简单的事物堆积而成，在本章我将带领各位读者庖丁解牛地学习 Flutter 中的 Widgets，不仅会介绍重要 API，更多的结合实际场景的应用，通过这一章的学习，各位读者将能够拥有 快速上手任何 Widget 的能力。
 
-# 基本 Widget
+# X.1 基本 Widget
 界面可以说是和用户最近的地方，一个精美的用户界一下就会吸引用户，这也是接触 Flutter 开发最有趣的一部分。通常拿到一个设计图，作为 UI 开发者我们首先考虑的是这两个问题：屏幕上应该有什么？它们又该放在哪？布局和显示被拆分成了两个问题，让后我们分别进行解决。
 
 对于 Flutter 来说这个问题被分解的相当彻底：一些组件只用于显示，例如按钮，文字，图片等，而另外一些组件不显示任何东西，他们的作用是对子组件进行布局，例如 行布局组件（row），列布局组件（column），单 child 对齐组件（align）。通过层级关系组成一个精美的页面。
 
-## 初识 Flutter
+## X.1.1 初识 Flutter
 
 说了这么多看上去都很抽象，让我们开始第一个小 Demo 入门 Flutter 吧！首先我们创建一个新的项目，相信通过之前的学习这对你已经是小菜一碟。当你完成创建之后，我们将删除所有 main.dart 的代码内容，从零开始编写 Flutter 应用程序。
 
@@ -139,7 +139,7 @@ Widget build(BuildContext context) {
 
 Cool！你现在可以在这个方块上进行自由探索，更改它的长度/宽度/颜色，看看会有什么变化。
 
-## 使用 Scaffold 快速搭建页面
+## X.1.2 使用 Scaffold 快速搭建页面
 
 在上一章我们已经带大家动手做了第一个 Flutter 小程序，虽然很简单，但是已经让我们对 Flutter 有了一个初步的印象了！而现在我们要做一个相对正式的 App，还记得我们之前提到的 Google 的设计守则 Material Design 吗，为了在应用中快速的搭建起 Materila 风格的页面，Flutter 为我们提供了一个 优秀的组件 ——MaterialApp，只需要使用它就可以快速获得非常多的基础能力，可以说是必不可少的一个组件。既然谈到了 Material 设计风格，那我想要使用 Apple 的设计风格怎么办呢，同样的 Flutter 也提供了一个叫做 CupertinoApp 的 Widget 组件，你可以把它看成 MaterialApp 的 Apple 设计风格版本。但是现在我们不深入去探究它，先看看如何使用吧。
 
@@ -225,4 +225,101 @@ Widget build(BuildContext context) {
 
 使用 Text Widget 很简单，只需要向 Text Widget 的构造函数 传入一个字符串就好了。
 
-## 基本的布局组件 Column / Row
+## X.1.3 基本的布局组件 Column / Row
+
+在上一节我们已经接触到了 Flutter 的 两个最常见的部件 MaterialApp 以及 Scaffold。你肯定已经对 Flutter 构建界面的方式有了一个初步印象了，非常不错。在这一节中我们将会学习 Flutter 的两个最基本的布局控件 Column 和 Row。可以说大部分的布局都将依赖于行布局/列布局来进行实现。
+
+要学习行/列布局，首先我们需要了解它的主轴/横轴。为什么要有这两根轴呢？我们来想一想，假如你有三个不同颜色的方块需要摆在屏幕上，它们分别都是 100 * 100 的宽度，你要怎么描述它的位置呢。其实初中学过直角坐标系我们都知道，要准确描述位置我们至少需要相互垂直的两根轴的数据才行。所以理解这两根轴就成了掌握 Row / Column 布局关键。
+
+我们先从行布局入手，逐步讲解这两条轴。（Row）首先第一步还是还原代码基础部分。我们之后都会在 Scaffold 的 body 内部构件 UI。
+
+``` dart
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        home: Scaffold(
+      		body: Row(
+        		children: <Widget>[
+          		Container(
+            		width: 100,
+            		height: 100,
+            		color: Colors.blueAccent,
+          		),
+          		Container(
+            		width: 100,
+            		height: 100,
+            		color: Colors.redAccent,
+          		),
+          		Container(
+            		width: 100,
+            		height: 100,
+            		color: Colors.greenAccent,
+          		),
+        		],
+      		),
+    		));
+  		}
+		}
+```
+
+Row 的作用就是给它的所有儿子组件进行行布局，这种为多个控件进行布局的组件将会使用 children 来接收一个 Widget 的数组。在上面这个例子中我们使用了 3 个 Container 创造出了3个 不同颜色的 100 * 100 的正方形，并让它们按照行排列。刷新你的界面将会看到下面这个效果。
+
+![](./pic/12E31AAB-5353-412E-9FF4-4149A872EA54.png)
+
+我们可以看到，这三个正方形从左上角开始向右依次排列，从左至右依次是按照 蓝 - 红 - 绿 这样的顺序排列，和我们源码中 children 从上至下的顺序一致。现在我们再来看 Row 的这两根轴。主轴（MainAxis）沿着水平方向从左至右，而横轴（CrossAxis）则是在竖直方向从上至下，见下图。
+
+![](./pic/EA2ACD71-EC32-467C-A158-41D3270D273B.png)
+
+先来看主轴的对齐方式，对应的 Row 的属性 是 MainAxisAlignment。这个属性实际上是一个枚举，Row 为我们提供了下面 6 种对齐方式。
+
+- Start：沿主轴起点开始依次对齐（默认将会使用这个属性）
+- end：沿主轴终点开始依次对齐
+- center：根据主轴中心对齐
+- spaceBetween：沿主轴两端对齐
+- spaceAround：沿主轴放置 Widget，各个 Widget 都会根据剩余空间自动计算并使用相同的间距，在第一个 Widget 和最后一个 Widget 与屏幕边缘的距离则会是 Widget 之间间距的一半。这样放置会感觉控件被均匀放置在了主轴上。
+- spaceEvenly：沿主轴放置 Widget，各个 Widget 之间以及第一个和最后一个 Widget 与屏幕左右边缘之间的距离都是相等的。
+
+文字来描述永远不如一幅图来的更加直观，我们现在来看看这些属性会给我们带来怎样的效果。由于 start 是我们的默认效果，之前的图片中已经给出，所以我们从 end 效果开始，我们添加下面这句代码（已标出）。
+
+``` dart
+Row(
+  //将主轴对齐方式设置为 end  
+  mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.blueAccent,
+          ),
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.redAccent,
+          ),
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.greenAccent,
+          ),
+        ],
+      ),
+```
+
+我们 hot reload 之后可以看到这三个方块已经屏幕左边移到屏幕右边了。
+
+![](./pic/E21C9966-E2A7-4C4C-90B6-807D2BB53F81.png)
+
+然后我们再来看看 spaceAround 是什么样的效果，改变一行代码就好。
+
+``` dart
+Row(
+  ...
+	mainAxisAlignment: MainAxisAlignment.spaceAround,
+	...
+)
+```
+
+![](./pic/F831E212-EFCD-4864-85C9-0D0274A5F701.png)
+
+我们可以看到，各个小方块之间都有相等的间隙，而第一个小方块以及最后一个小方块之间也有（相对于 Widget 之间一半）的间隙。
