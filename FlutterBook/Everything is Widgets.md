@@ -89,7 +89,7 @@ class App extends StatelessWidget {
 
 麻雀虽小，五脏俱全，没错就是这么几行代码，你的 Flutter 应用已经完全准备好啦，现在你可以运行你的程序。当你的编译完成并安装好了之后，我们将会看到这样一个应用。
 
-![](./pic/E281938C-E2CA-4AE4-925A-5C1EB04567E5.png)
+![introduce-base](./pic/introduce-base.png)
 
 是不是比你想象中要简单很多呢，让我们继续深入吧。我们来试着向这个 Container中添加一些基本属性。现在我想要这个 Container 变成一个 高 100 dp，宽 100 dp 的小正方形，于是添加如下代码。
 
@@ -133,7 +133,7 @@ Widget build(BuildContext context) {
 
 然后再使用快捷保存按钮进行 hot reload，你的应用将会快速刷新，像下面这样。
 
-![](./pic/DD154612-F82A-4F27-8BF5-EC2932E21EF0.png)
+![introduce](./pic/introduce.png)
 
 ### 探索练习
 
@@ -154,7 +154,7 @@ class App extends StatelessWidget {
 
 我们和之前一样，创建一个叫做 App 的类并继承至 Stateless Widget，在 build 方法中我们返回一个 MaterialApp。它没有任何的界面，纯粹作为功能组件使用。现在我们想要快速的 搭建起一套基础界面，就像下面这样。
 
-![](./pic/04154A0F-D3E4-405D-B8B4-19B95777ADA9.png)
+![](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Scaffold-Demo.png)
 
 这是一个非常常见的一种 Material 设计布局方式，顶部有一个导航栏，左边有一个可以点开的抽屉，下面有一个浮动按钮。为了让开发者们能够更加方便的快速搭建起这样一个布局，Flutter 为我们提供了一个 脚手架 —— Scaffold。一开始我其实也不太习惯这个名字，似乎是建筑工地修房子，就会先搭建起一个脚手架，然后就可以沿着这个架子慢慢往上修。在这里你可以把它就想像成一张纸，纸张背面已经为我们规划好了一些常见的布局位置，而我们只需要把想要的位置选出来然后把组件放上去，就可以了。听上去好像很简单，让我们来试试吧。
 
@@ -182,7 +182,7 @@ Widget build(BuildContext context) {
 
 是不是很简单呢，现在我们 hot reload 一下，你的界面上应该会变成这样。
 
-![](./pic/495AEE33-B446-4488-8008-E6E92158E0FD.png)
+![](./pic/Scaffold-AppBar.png)
 
 同样的，我们的左部抽屉和底部的浮动按钮与AppBar 一样，Scaffold 也为它们提供了相应的位置，只需要在对应属性上放入相应对象即可。
 
@@ -199,7 +199,7 @@ Widget build(BuildContext context) {
   }
 ```
 
-![](./pic/BD0743D1-3844-4474-8787-A97134129E7F.png)
+![](./pic/Scaffold-Drawer.png)
 
 然后你就可以看到你的界面上已经具有一个顶部的 AppBar 左边有一个可以通过滑动弹出来的 Drawer，以及底部的 FloatingActionButton 了。一切都那么自然，搭建一个界面就是这么简单。
 
@@ -265,11 +265,11 @@ class App extends StatelessWidget {
 
 Row 的作用就是给它的所有儿子组件进行行布局，这种为多个控件进行布局的组件将会使用 children 来接收一个 Widget 的数组。在上面这个例子中我们使用了 3 个 Container 创造出了3个 不同颜色的 100 * 100 的正方形，并让它们按照行排列。刷新你的界面将会看到下面这个效果。
 
-![](./pic/12E31AAB-5353-412E-9FF4-4149A872EA54.png)
+![](./pic/Row.png)
 
 我们可以看到，这三个正方形从左上角开始向右依次排列，从左至右依次是按照 蓝 - 红 - 绿 这样的顺序排列，和我们源码中 children 从上至下的顺序一致。现在我们再来看 Row 的这两根轴。主轴（MainAxis）沿着水平方向从左至右，而横轴（CrossAxis）则是在竖直方向从上至下，见下图。
 
-![](./pic/EA2ACD71-EC32-467C-A158-41D3270D273B.png)
+![](./pic/Row-Axis.png)
 
 先来看主轴的对齐方式，对应的 Row 的属性 是 MainAxisAlignment。这个属性实际上是一个枚举，Row 为我们提供了下面 6 种对齐方式。
 
@@ -308,7 +308,7 @@ Row(
 
 我们 hot reload 之后可以看到这三个方块已经屏幕左边移到屏幕右边了。
 
-![](./pic/E21C9966-E2A7-4C4C-90B6-807D2BB53F81.png)
+![](./pic/Row-mainAxis-end.png)
 
 然后我们再来看看 spaceAround 是什么样的效果，改变一行代码就好。
 
@@ -320,6 +320,78 @@ Row(
 )
 ```
 
-![](./pic/F831E212-EFCD-4864-85C9-0D0274A5F701.png)
+![](./pic/Row-mainAxis-spaceAround.png)
 
 我们可以看到，各个小方块之间都有相等的间隙，而第一个小方块以及最后一个小方块之间也有（相对于 Widget 之间一半）的间隙。
+
+看完这些例子，相信你对 Row 的主轴已经有感觉了，那么我们再来看看 Row 的横轴就会感觉比较简单了。
+
+同样的，横轴上 Flutter 也为我们提供了 5 种对齐方式，分别是
+
+- start：沿横轴的起点开始依次排列，Widget 之间紧密相连无间隙。
+- end：沿横轴的终点开始依次排列，Widget之间紧密相连无间隙。
+- center：沿横轴中心排列。
+- stretch：强制撑满横轴
+- baseline：沿横轴与基线对齐，如果主轴是垂直的，那么视其为 start。
+
+在这里我们通过对 Row 的属性进行如下更改，将其设置为 end 效果。
+
+``` dart
+Row(
+  ...
+	crossAxisAlignment: CrossAxisAlignment.end,
+	...
+)
+```
+
+然而当你刷新屏幕之后，可能会发现和你想象中不一样。看上去并没有变化，这是为什么呢。我们可以通过 Flutter 官方提供的 Flutter Inspector 进行检查。大家若是使用的 Android Studio 那么这项功能会在你的 IDE 右侧有一个这样的按钮。
+
+![Flutter Inspector](./pic/Flutter Inspector.png)
+
+如果你使用的 VS Code 那么你可以使用 Dart Code ，参考下列链接 <https://dartcode.org/>。现在你需要点击下面这个按钮。
+
+![Flutter Inspector-button](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-button.png)
+
+然后点击屏幕上的 Widget，你会看到在你的屏幕上出现了几根线，它们标注出了你的 Widget 的范围，即使是一些看不见的 Widget 同样也被标记出，例如 Row。
+
+![Flutter Inspector-Row](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-Row.png)
+
+我们可以看到这个 Row 在横轴上包裹住了它的 children，现在对他来说，不管是 start 还是 end，显示效果就都一样了，那么这种情况应该怎么处理呢。
+
+为了让 Row 尽可能扩大并充满父组件（这里是整个屏幕），我们可以在这个 Row 组件的外部包裹一个 `SizedBox.expand` 组件。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+        home: Scaffold(
+          //包裹SizedBox.expand
+      body: SizedBox.expand(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Container(
+              width: 100,
+              height: 100,
+              color: Colors.blueAccent,
+            ),
+            Container(
+              width: 100,
+              height: 100,
+              color: Colors.redAccent,
+            ),
+            Container(
+              width: 100,
+              height: 100,
+              color: Colors.greenAccent,
+            ),
+          ],
+        ),
+      ),
+    ));
+```
+
+然后我们刷新屏幕，这时候你应该会发现这三个 Widget 在横轴上都已经跑到 end 的位置了。
+
+![Row-CrossAxis-end.png](./pic/Row-CrossAxis-end.png.png)
+
+在 Flutter Inspector 中我们可以看到，这时候 Row 已经撑满了整个屏幕，这样在它的横轴上就有足够的空间进行布局了。
