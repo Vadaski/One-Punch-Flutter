@@ -287,21 +287,7 @@ Row(
   //将主轴对齐方式设置为 end  
   mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          Container(
-            width: 100,
-            height: 100,
-            color: Colors.blueAccent,
-          ),
-          Container(
-            width: 100,
-            height: 100,
-            color: Colors.redAccent,
-          ),
-          Container(
-            width: 100,
-            height: 100,
-            color: Colors.greenAccent,
-          ),
+         ...
         ],
       ),
 ```
@@ -369,21 +355,7 @@ Widget build(BuildContext context) {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            Container(
-              width: 100,
-              height: 100,
-              color: Colors.blueAccent,
-            ),
-            Container(
-              width: 100,
-              height: 100,
-              color: Colors.redAccent,
-            ),
-            Container(
-              width: 100,
-              height: 100,
-              color: Colors.greenAccent,
-            ),
+            ...
           ],
         ),
       ),
@@ -394,4 +366,106 @@ Widget build(BuildContext context) {
 
 ![Row-CrossAxis-end.png](./pic/Row-CrossAxis-end.png.png)
 
-在 Flutter Inspector 中我们可以看到，这时候 Row 已经撑满了整个屏幕，这样在它的横轴上就有足够的空间进行布局了。
+在 Flutter Inspector 中我们可以看到，这时候 Row 已经撑满了整个屏幕，这样在它的横轴上就有足够的空间进行布局了。而默认 Row 在横轴会使用 center 的对齐。
+
+了解完 Row 的对齐方式，现在我们来看下一个属性 `MainAxisSize`，这个属性的作用将会决定 Row 在主轴上如何进行扩展。在之前我们可以看到，主轴上的 Widget 不需要对 Row 额外增加 SizedBox 用以扩展就直接撑满了整个主轴，原因就在于 Flutter 默认使用 MainAxisSize.max。也就是只要主轴有足够的空间就会尽可能大，直到占有所有空间。同样的 MainAxisSize 也是一个 枚举，提供了下面两种选择
+
+- MainAxisSize.max：沿沿主轴尽可能撑满
+- MainAxisSize.min：沿主轴尽可能缩小
+
+那我们来看看 MainAxisSize.min 的效果。首先需要去掉 SizedBox.expand，然后添加该属性，代码如下：
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+        home: Scaffold(
+      body: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.blueAccent,
+          ),
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.redAccent,
+          ),
+          Container(
+            width: 100,
+            height: 100,
+            color: Colors.greenAccent,
+          ),
+        ],
+      ),
+    ));
+  }
+```
+
+然后我们再使用 Flutter Inspector 进行查看。
+
+![Row-MainAxisSize-min](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Row-MainAxisSize-min.png)
+
+可以看到，现在的 Row 已经在主轴上尽可能小，直到刚好包裹子控件的大小。
+
+通常我们是按照从左到右进行读写，但是有些国家是从右到左的，例如阿拉伯语。这个时候我们想要控制布局的方向的话，就需要使用到 Row 的 `textDirection` 属性了。同样地，这也是一个枚举，提供了下面两种选择
+
+- TextDirection.ltr：从左至右(left to right)进行排列布局。（默认）
+- TextDirection.rtl：从右至左(right to left)进行排列布局。
+
+我们添加下面这段代码，来观看效果。
+
+``` dart
+Row(
+  ...
+	textDirection: TextDirection.rtl,
+	...
+)
+```
+
+![TextDirection-rtl](./pic/TextDirection-rtl.png)
+
+这里可以回到之前的 主轴 end 对齐，来对比一下不同。三个 Widget 从左至右现在是 绿色 / 红色 / 蓝色，屏幕左右镜像颠倒了。
+
+当我们学习过 Row 组件之后，相信 Column 组件对你来说也是小菜一碟。
+
+![Column Axis](./pic/Column Axis.png)
+
+在 Column 中主轴则是从上至下，横轴则是从左至右。同样的，它和 Row 有着如出一辙的属性
+
+- MainAxisAlignment：主轴对齐方式
+- CrossAxisAlignment：横轴对齐方式
+- MainAxisSize：主轴扩展方式
+- VerticalDirection：在竖直线上的方向，和 Row 中的 TextDirection 作用类似
+- TextBaseline：基线对齐方式，很少使用
+
+在上面的属性中，只有 VerticalDirection 没有见过。这个属性实际上和 Row 中的 TextDirection 类似，具有下面两种选择
+
+- VerticalDirection.up：从下至上开始排列
+- VerticalDirection.down：从上至下开始排列（默认）
+
+现在我们只需要将之前的 Row 替换成 Column ，然后将其 verticalDirection 属性设置为 up。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+        home: Scaffold(
+      body: Column(
+        verticalDirection: VerticalDirection.up,
+        children: <Widget>[
+          Container(height: 100,width: 100,color: Colors.pinkAccent,),
+          Container(height: 100,width: 100,color: Colors.blueAccent,),
+          Container(height: 100,width: 100,color: Colors.greenAccent,),
+        ],
+      ),
+    ));
+  }
+```
+
+![Column-verticalDirection](./pic/Column-verticalDirection.png)
+
+可以观察到，我们的代码中 children 的顺序和显示的顺序是逆反的，且从底部开始逐渐向上排列。
+
+Cool！你已经学会了基本的布局方式了，但是你肯定还是会有些晕，各种属性对你来说印象肯定还是不深刻，最好的学习编程方式就是动手练习。现在就动手练练吧，看看你写出来的代码和想象中的样子是否一致，你会收获更多！
