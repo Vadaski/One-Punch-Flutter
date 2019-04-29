@@ -89,7 +89,7 @@ class App extends StatelessWidget {
 
 麻雀虽小，五脏俱全，没错就是这么几行代码，你的 Flutter 应用已经完全准备好啦，现在你可以运行你的程序。当你的编译完成并安装好了之后，我们将会看到这样一个应用。
 
-![E281938C-E2CA-4AE4-925A-5C1EB04567E5](/Users/litavadaski/Desktop/Flutter/FlutterBook/pic/E281938C-E2CA-4AE4-925A-5C1EB04567E5.png)
+![](./pic/E281938C-E2CA-4AE4-925A-5C1EB04567E5.png)
 
 是不是比你想象中要简单很多呢，让我们继续深入吧。我们来试着向这个 Container中添加一些基本属性。现在我想要这个 Container 变成一个 高 100 dp，宽 100 dp 的小正方形，于是添加如下代码。
 
@@ -133,7 +133,7 @@ Widget build(BuildContext context) {
 
 然后再使用快捷保存按钮进行 hot reload，你的应用将会快速刷新，像下面这样。
 
-![DD154612-F82A-4F27-8BF5-EC2932E21EF0](/Users/litavadaski/Desktop/Flutter/FlutterBook/pic/DD154612-F82A-4F27-8BF5-EC2932E21EF0.png)
+![](./pic/DD154612-F82A-4F27-8BF5-EC2932E21EF0.png)
 
 ### 探索练习
 
@@ -154,7 +154,7 @@ class App extends StatelessWidget {
 
 我们和之前一样，创建一个叫做 App 的类并继承至 Stateless Widget，在 build 方法中我们返回一个 MaterialApp。它没有任何的界面，纯粹作为功能组件使用。现在我们想要快速的 搭建起一套基础界面，就像下面这样。
 
-![04154A0F-D3E4-405D-B8B4-19B95777ADA9](/Users/litavadaski/Desktop/Flutter/FlutterBook/pic/04154A0F-D3E4-405D-B8B4-19B95777ADA9.png)
+![](./pic/04154A0F-D3E4-405D-B8B4-19B95777ADA9.png)
 
 这是一个非常常见的一种 Material 设计布局方式，顶部有一个导航栏，左边有一个可以点开的抽屉，下面有一个浮动按钮。为了让开发者们能够更加方便的快速搭建起这样一个布局，Flutter 为我们提供了一个 脚手架 —— Scaffold。一开始我其实也不太习惯这个名字，似乎是建筑工地修房子，就会先搭建起一个脚手架，然后就可以沿着这个架子慢慢往上修。在这里你可以把它就想像成一张纸，纸张背面已经为我们规划好了一些常见的布局位置，而我们只需要把想要的位置选出来然后把组件放上去，就可以了。听上去好像很简单，让我们来试试吧。
 
@@ -182,7 +182,7 @@ Widget build(BuildContext context) {
 
 是不是很简单呢，现在我们 hot reload 一下，你的界面上应该会变成这样。
 
-![495AEE33-B446-4488-8008-E6E92158E0FD](/Users/litavadaski/Desktop/Flutter/FlutterBook/pic/495AEE33-B446-4488-8008-E6E92158E0FD.png)
+![](./pic/495AEE33-B446-4488-8008-E6E92158E0FD.png)
 
 同样的，我们的左部抽屉和底部的浮动按钮与AppBar 一样，Scaffold 也为它们提供了相应的位置，只需要在对应属性上放入相应对象即可。
 
@@ -199,7 +199,7 @@ Widget build(BuildContext context) {
   }
 ```
 
-![BD0743D1-3844-4474-8787-A97134129E7F](/Users/litavadaski/Desktop/Flutter/FlutterBook/pic/BD0743D1-3844-4474-8787-A97134129E7F.png)
+![](./pic/BD0743D1-3844-4474-8787-A97134129E7F.png)
 
 然后你就可以看到你的界面上已经具有一个顶部的 AppBar 左边有一个可以通过滑动弹出来的 Drawer，以及底部的 FloatingActionButton 了。一切都那么自然，搭建一个界面就是这么简单。
 
