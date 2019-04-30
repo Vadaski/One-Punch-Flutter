@@ -623,3 +623,204 @@ Widget build(BuildContext context) {
 可以观察到，我们的代码中 children 的顺序和显示的顺序是逆反的，且从底部开始逐渐向上排列。
 
 Cool！你已经学会了基本的布局方式了，但是你肯定还是会有些晕，各种属性对你来说印象肯定还是不深刻，最好的学习编程方式就是动手练习。现在就动手练练吧，看看你写出来的代码和想象中的样子是否一致，你会收获更多！
+
+## Flutter 中的 Flex 布局
+
+在上一节我们学习了 Column 和 Row 两种多 child 布局的组件，但是感觉好像还是差一点灵活性。然而这并不是 Column 和 Row 的全部，Flex 将为它们带来更加强大的灵活性。
+
+假如你之前有过前端或者安卓的开放经验，相信 Flex 这个概念对你来说并不会陌生，例如 H5 中的 Flex Box 以及安卓中的 FlexboxLayout，它能够让我们按照比例进行布局。
+
+在普通情况下，正常的组件是不会被拉伸的，就像上一节我们所讲到的那样，然而我们可以通过在 Flex 组件内部使用 Expanded 进行实现。
+
+现在我们来使用 Flex 进行一个简单的布局，我们在 Flex 中还是使用三个 100 * 100 的 Container。但是我将会在第二个 Container 外部包裹一个 Expanded。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Flex(
+        direction: Axis.vertical,
+        children: <Widget>[
+          Container(
+            height: 100,
+            width: 100,
+            color: Colors.blueAccent,
+          ),
+          Expanded(
+            child: Container(
+              height: 100,
+              width: 100,
+              color: Colors.redAccent,
+            ),
+          ),
+          Container(
+            height: 100,
+            width: 100,
+            color: Colors.greenAccent,
+          ),
+        ],
+      )),
+    );
+  }
+```
+
+Flex 需要传入一个必选参数 direction，这个参数将决定 Flex 究竟是横向排列它的 children 还是 竖直排列。
+
+- Axis.vertical：竖直排列
+- Axis.horizontal：水平排列
+
+这里我选择了竖直排列，我们来看看效果。
+
+![flex](./pic/flex.png)
+
+红色的 Container 被强制拉伸撑满了整个空间，在主轴上小部件的高度被无效化。使用了 Expanded 组件的 Widget 将会变成弹性 Widget，并强制充满整个剩余空间。而 Expanded 中具有一个 弹性因子 flex。这个值 默认会是 1，当有多个具有 Expanded 包裹的组件出现在同一个 Flex Widget 中时，我们可以通过控制 Flex 来控制比例。
+
+``` dart
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Flex(
+        direction: Axis.vertical,
+        children: <Widget>[
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 100,
+              width: 100,
+              color: Colors.blueAccent,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 100,
+              width: 100,
+              color: Colors.redAccent,
+            ),
+          ),
+          Container(
+            height: 100,
+            width: 100,
+            color: Colors.greenAccent,
+          ),
+        ],
+      )),
+    );
+  }
+```
+
+我们给蓝色 `Container` 套上 `Expanded` 并将其 flex 因子设置为 2，第二个 只套一个 `Expanded` 不设置其 flex 因子，第三个 `Container` 保持不变，效果如下。
+
+![Expanded-flex](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Expanded-flex.png)
+
+我们可以看到 蓝色 和 红色 的比例是 2:1，而没有套 Expanded 的部分没有变化。在主轴上我们看到使用 Expanded 能够让我们按照比例进行布局。
+
+看到这里你或许已经发现了，Flex 和 之前的 Column / Row 很像！yes 你猜的没错，实际上 Column 和 Row 就是继承至 Flex，只不过在构造函数的时候确定了 Flex 的 direction 而已。上一节我们介绍的 Column 和 Row 的所有属性 对于 Flex 适用，这一节中的 Flex 的特性 在 Column / Row 中一样适用。
+
+我们现在了解了 Expanded 能够强制扩展 Flex 中的 children，如果你想要更加精细的控制的话，使用 `Flexible` Widget。
+
+这个 Widget 不仅具有 flex 因子，而且具有两种不同的方式来进行扩展，通过 fit 属性进行控制。
+
+- Flexfit.tight（严密）：强制小部件扩展充满剩余空间
+- Flexfit.loose（松散）：小部件可以按照最大进行扩展（当小部件在主轴上没有高度时），但是允许其更小。
+
+我们来通过两个例子理解这个小部件。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Flex(
+        direction: Axis.vertical,
+        children: <Widget>[
+          Flexible(
+            fit: FlexFit.loose,
+            child: Container(
+              color: Colors.blueAccent,
+            ),
+          ),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Container(
+              color: Colors.redAccent,
+            ),
+          ),
+        ],
+      )),
+    );
+  }
+```
+
+当我们的 child 小部件在主轴上没有高度时，它的作用等同于 Expanded，无论是 tight 还是 loose，它们都将会根据 flex 因子（因为没有主动设置所以默认都为1），平分整个空间。
+
+![flexible-nomal](./pic/flexible-nomal.png)
+
+当我们的 小部件本身在 **主轴** 上具有高度的话，那么 `FlexFit.tight` 将会无视其高度，根据 flex 因子将其强制充满剩余空间。而 `FlexFit.loose` 则会优先使用小部件本身的高度。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Flex(
+        direction: Axis.vertical,
+        children: <Widget>[
+          Flexible(
+            flex: 1,
+            fit: FlexFit.loose,
+            child: Container(
+              height: 100,
+              color: Colors.blueAccent,
+            ),
+          ),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Container(
+              height: 100,
+              color: Colors.redAccent,
+            ),
+          ),
+        ],
+      )),
+    );
+  }
+```
+
+
+
+![flexible-loose-hasHeight](./pic/flexible-loose-hasHeight.png)
+
+可以看到，使用 loose 的 小部件 优先使用了其本来的高度，这里我们设置的为 100。而剩下的部分将会按照 flex 因子，为整个剩余空间的一半。这是 flex 因子为 1:1 的情况，假若其比例不同，则会影响属性为  `FlexFit.tight` 的组件。
+
+``` dart
+children: <Widget>[
+          Flexible(
+            flex: 2,
+            fit: FlexFit.loose,
+            child: Container(
+              height: 100,
+              color: Colors.blueAccent,
+            ),
+          ),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Container(
+              height: 100,
+              color: Colors.redAccent,
+            ),
+          ),
+        ],
+```
+
+在这个例子中我们将第一个的 flex 因子设置为 2，第二个 flex 因子没有设置，所以默认为 1，那么现在的比例则会变成这样。
+
+![flexible-loose-hasHeight-diffflex](./pic/flexible-loose-hasHeight-diffflex.png)
+
+这时候，由于 flex 因子为 2:1 的缘故，所以 粉色 Container（flex 因子为1，fit 属性为 tight），在主轴上只占了 3 分之 1 的空间，而蓝色依然由于其 fit 为 loose 所以优先使用 child 的 在主轴上的长度。
+
+实际上在进行布局的时候分为以下六个步骤；
+
+- 首先按照不受限制的主轴约束将 children 中没有 Flex 因子（没有套 Expanded）的 Widget 进行布局。如果 [crossAxisAlignment](https://docs.flutter.io/flutter/widgets/Flex/crossAxisAlignment.html) 是 [CrossAxisAlignment.stretch](https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html)，则将会在 横轴上尽可能延伸，也就是尽可能充满父级空间。
+- 按照 Flex 中存在的 flex 因子，在主轴上取最大约束，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）
+- 然后将使用了 flex 因子的 child 在 横轴方向上根据其因子 按照比例划分剩余空间。
+- 
+
+我们可以看到，通过引入 loose 确实增加了其布局灵活性，然而同时也让整个 layout 变得更加复杂，更加难以预测。在实际的布局过程中，Expanded 是一个更佳的选择。
