@@ -225,9 +225,171 @@ Widget build(BuildContext context) {
 
 使用 Text Widget 很简单，只需要向 Text Widget 的构造函数 传入一个字符串就好了。
 
-## X.1.3 基本的布局组件 Column / Row
+## X.1.3 基本的单子布局组件
 
-在上一节我们已经接触到了 Flutter 的 两个最常见的部件 MaterialApp 以及 Scaffold。你肯定已经对 Flutter 构建界面的方式有了一个初步印象了，非常不错。在这一节中我们将会学习 Flutter 的两个最基本的布局控件 Column 和 Row。可以说大部分的布局都将依赖于行布局/列布局来进行实现。
+在上一节我们已经接触到了 Flutter 的 两个最常见的部件 MaterialApp 以及 Scaffold。你肯定已经对 Flutter 构建界面的方式有了一个初步印象了，Good。现在我们来看看 Flutter 中的布局。
+
+你可以想一想这个问题，我们若想要在屏幕上放置一个浮动按钮，应该如何放。相信你一定会产生疑问，这个按钮应该被放在哪。现在我们来看看，若我们直接在 `Scaffold` 的 body 中放置一个 `FloatingActionButton` 会怎么样。
+
+我们依然是按照上一节的方式，先构建基本组件 `MaterialApp` 、`Scaffold`。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: FloatingActionButton(
+          onPressed: null,
+        ),
+      ),
+    );
+  }
+```
+
+![layout-default](./pic/layout-default.png)
+
+运行 app 可以看到浮动按钮出现在了左上角，在 Flutter 中，默认的定位就是在左上角，这里可以留意一下，之后我们还会遇到。
+
+那么如何控制这个 `FloatingActionButton` 的位置呢。答案是使用 `Align` Widget！要是用 Align 我们得先回顾一下初中的知识，这是由于 Flutter 引入了基于笛卡尔坐标系（x / width）和Y /高度。
+
+![Cartesian coordinate system](./pic/Cartesian coordinate system.png)
+
+值得一提的是，看上去这个坐标系和我们之前见过的或许不太一样，它的 y 轴是竖直向下的。中心坐标为 (0,0)，中心到屏幕边缘的距离为 1。
+
+在了解了坐标系之后相信 Align 对你来说已经能够猜到如何使用了。现在我们来使用 Align 对它的 child 进行布局吧。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Align(
+          alignment: Alignment(0, 0),
+          child: FloatingActionButton(
+            onPressed: null,
+          ),
+        )
+      ),
+    );
+  }
+```
+
+Align 最主要的参数就是 alignment，这个属性需要接受一个 `AlignmentGeometry` 作为参数。我们可以创建一个 Alignment 对象来对其进行描述（它是 `AlignmentGeometry` 的子类），并给它 (x , y) 坐标。我们这里给了原点坐标，现在你的 浮动按钮应该被固定在了屏幕中心了，刷新你的代码看看吧。
+
+![75236D76-174F-41CE-8982-1A422A768328](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/75236D76-174F-41CE-8982-1A422A768328.png)
+
+除了使用具体的值进行描述，我们还可以使用一些已经调整好的枚举值进行使用。
+
+``` dart
+  /// The top left corner.
+  static const Alignment topLeft = Alignment(-1.0, -1.0);
+
+  /// The center point along the top edge.
+  static const Alignment topCenter = Alignment(0.0, -1.0);
+
+  /// The top right corner.
+  static const Alignment topRight = Alignment(1.0, -1.0);
+
+  /// The center point along the left edge.
+  static const Alignment centerLeft = Alignment(-1.0, 0.0);
+
+  /// The center point, both horizontally and vertically.
+  static const Alignment center = Alignment(0.0, 0.0);
+
+  /// The center point along the right edge.
+  static const Alignment centerRight = Alignment(1.0, 0.0);
+
+  /// The bottom left corner.
+  static const Alignment bottomLeft = Alignment(-1.0, 1.0);
+
+  /// The center point along the bottom edge.
+  static const Alignment bottomCenter = Alignment(0.0, 1.0);
+
+  /// The bottom right corner.
+  static const Alignment bottomRight = Alignment(1.0, 1.0);
+```
+
+要更加快速的学习一个框架，查看源码是一项非常重要的技能。我们现在看到的就是 Alignment 的源码，在这里已经定义好了很多 static 的值，相信你一定很快就能猜到，比如 topLeft 就是将其 child 按照左上方进行对齐。在代码中我们就可以这样进行使用。
+
+``` dart
+Align(
+    alignment: Alignment.bottomRight,
+    child: FloatingActionButton(
+      onPressed: null,  
+     ),
+  )
+```
+
+除了这个参数以外，Align 还提供了 widthFactor 和 heightFactor 两个参数，它们又是做什么的呢。实际上当我们不设置这两个参数时，我们的 Align 默认会充满它的父级，这时候所有定位都是根据 Align 所占的空间进行的。而 widthFactor 和 heightFactor 则是用来控制 Align的大小。 而这个大小则是根据它的 child 进行调整，child 的宽高作为其因子，当 widthFactor 和 heightFactor 值为 1 时，将会和其 child 一样大小。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Align(
+          alignment: Alignment.bottomRight,
+          heightFactor: 1,
+          widthFactor: 1,
+          child: FloatingActionButton(
+            onPressed: null,
+          ),
+        )
+      ),
+    );
+  }
+```
+
+这两个参数设置为 1 会发生什么呢，我们可以通过 Flutter 官方提供的 Flutter Inspector 进行检查。大家若是使用的 Android Studio 那么这项功能会在你的 IDE 右侧有一个这样的按钮。
+
+![Flutter Inspector](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter%20Inspector.png)
+
+如果你使用的 VS Code 那么你可以使用 Dart Code ，参考下列链接 <https://dartcode.org/>。现在你需要点击下面这个按钮。
+
+![Flutter Inspector-button](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter%20Inspector-button.png)
+
+然后点击屏幕上的 Widget，你会看到在你的屏幕上出现了几根线，它们标注出了你的 Widget 的范围，即使是一些看不见的 Widget 同样也被标记出。
+
+![align-factor-1](./pic/align-factor-1.png)
+
+我们可以看到，即使我们设置了 Align 的对齐方式为 bottomRight（右下角），然而 浮动按钮还是出现在了左上角。现在我们再来看一个例子：将其  widthFactor 和 heightFactor 两个参数 都设置为 2，理论上它就会有两倍的 浮动按钮大小，然后再将其放在一个 Center （居中）小部件中。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Align(
+            alignment: Alignment.bottomRight,
+            heightFactor: 2,
+            widthFactor: 2,
+            child: FloatingActionButton(
+              onPressed: null,
+            ),
+          ),
+        )
+      ),
+    );
+  }
+```
+
+![align-factor-1](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/align-factor-2.png)
+
+我们再来解释一下布局发生了什么。首先 Center 小部件充满了整个屏幕，然后把它的 child 也就是 Align 小部件居中，然后 Align 小部件有两倍的其 child 的宽度，然后根据它的对齐方式，在它的范围内进行右下角对齐。
+
+最后我们通过源码来看 Center 小部件。
+
+``` dart
+class Center extends Align {
+  const Center({ Key key, double widthFactor, double heightFactor, Widget child })
+    : super(key: key, widthFactor: widthFactor, heightFactor: heightFactor, child: child);
+}
+```
+
+可以看到，Center 小部件实际上就是 Align 小部件，只是无法定义其对齐属性而已。而 Align 小部件默认也是使用的居中对齐。
+
+怎么样，现在你对 Flutter 的布局方式是不是理解的更加深刻了呢，但是光看不练很快你就会忘，赶紧试试吧。
+
+## X.1.4 基本的布局组件 Column / Row
+
+在上一节我们尝试了使用 `Center` `Align`  对 单个 Widget 进行布局。你是否已经掌握了呢。 在这一节中我们将会学习 Flutter 的两个最基本的多子布局控件 Column 和 Row。可以说大部分的布局都将依赖于行布局/列布局来进行实现。
 
 要学习行/列布局，首先我们需要了解它的主轴/横轴。为什么要有这两根轴呢？我们来想一想，假如你有三个不同颜色的方块需要摆在屏幕上，它们分别都是 100 * 100 的宽度，你要怎么描述它的位置呢。其实初中学过直角坐标系我们都知道，要准确描述位置我们至少需要相互垂直的两根轴的数据才行。所以理解这两根轴就成了掌握 Row / Column 布局关键。
 
@@ -330,15 +492,7 @@ Row(
 )
 ```
 
-然而当你刷新屏幕之后，可能会发现和你想象中不一样。看上去并没有变化，这是为什么呢。我们可以通过 Flutter 官方提供的 Flutter Inspector 进行检查。大家若是使用的 Android Studio 那么这项功能会在你的 IDE 右侧有一个这样的按钮。
-
-![Flutter Inspector](./pic/Flutter Inspector.png)
-
-如果你使用的 VS Code 那么你可以使用 Dart Code ，参考下列链接 <https://dartcode.org/>。现在你需要点击下面这个按钮。
-
-![Flutter Inspector-button](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-button.png)
-
-然后点击屏幕上的 Widget，你会看到在你的屏幕上出现了几根线，它们标注出了你的 Widget 的范围，即使是一些看不见的 Widget 同样也被标记出，例如 Row。
+然而当你刷新屏幕之后，可能会发现和你想象中不一样。看上去并没有变化，我们任然通过 Flutter Inspector 进行检查。
 
 ![Flutter Inspector-Row](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-Row.png)
 
