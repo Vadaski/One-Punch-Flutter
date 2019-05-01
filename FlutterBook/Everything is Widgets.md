@@ -391,7 +391,7 @@ class Center extends Align {
 
 在上一节我们尝试了使用 `Center` `Align`  对 单个 Widget 进行布局。你是否已经掌握了呢。 在这一节中我们将会学习 Flutter 的两个最基本的多子布局控件 Column 和 Row。可以说大部分的布局都将依赖于行布局/列布局来进行实现。
 
-要学习行/列布局，首先我们需要了解它的主轴/交叉轴。为什么要有这两根轴呢？我们来想一想，假如你有三个不同颜色的方块需要摆在屏幕上，它们分别都是 100 * 100 的宽度，你要怎么描述它的位置呢。其实初中学过直角坐标系我们都知道，要准确描述位置我们至少需要相互垂直的两根轴的数据才行。所以理解这两根轴就成了掌握 Row / Column 布局关键。
+要学习行/列布局，首先我们需要了解它的主轴/横轴。为什么要有这两根轴呢？我们来想一想，假如你有三个不同颜色的方块需要摆在屏幕上，它们分别都是 100 * 100 的宽度，你要怎么描述它的位置呢。其实初中学过直角坐标系我们都知道，要准确描述位置我们至少需要相互垂直的两根轴的数据才行。所以理解这两根轴就成了掌握 Row / Column 布局关键。
 
 我们先从行布局入手，逐步讲解这两条轴。（Row）首先第一步还是还原代码基础部分。我们之后都会在 Scaffold 的 body 内部构件 UI。
 
@@ -429,7 +429,7 @@ Row 的作用就是给它的所有儿子组件进行行布局，这种为多个�
 
 ![](./pic/Row.png)
 
-我们可以看到，这三个正方形从左上角开始向右依次排列，从左至右依次是按照 蓝 - 红 - 绿 这样的顺序排列，和我们源码中 children 从上至下的顺序一致。现在我们再来看 Row 的这两根轴。主轴（MainAxis）沿着水平方向从左至右，而交叉轴（CrossAxis）则是在竖直方向从上至下，见下图。
+我们可以看到，这三个正方形从左上角开始向右依次排列，从左至右依次是按照 蓝 - 红 - 绿 这样的顺序排列，和我们源码中 children 从上至下的顺序一致。现在我们再来看 Row 的这两根轴。主轴（MainAxis）沿着水平方向从左至右，而横轴（CrossAxis）则是在竖直方向从上至下，见下图。
 
 ![](./pic/Row-Axis.png)
 
@@ -472,15 +472,15 @@ Row(
 
 我们可以看到，各个小方块之间都有相等的间隙，而第一个小方块以及最后一个小方块之间也有（相对于 Widget 之间一半）的间隙。
 
-看完这些例子，相信你对 Row 的主轴已经有感觉了，那么我们再来看看 Row 的交叉轴就会感觉比较简单了。
+看完这些例子，相信你对 Row 的主轴已经有感觉了，那么我们再来看看 Row 的横轴就会感觉比较简单了。
 
-同样的，交叉轴上 Flutter 也为我们提供了 5 种对齐方式，分别是
+同样的，横轴上 Flutter 也为我们提供了 5 种对齐方式，分别是
 
-- start：沿交叉轴的起点开始依次排列，Widget 之间紧密相连无间隙。
-- end：沿交叉轴的终点开始依次排列，Widget之间紧密相连无间隙。
-- center：沿交叉轴中心排列。
-- stretch：强制撑满交叉轴
-- baseline：沿交叉轴与基线对齐，如果主轴是垂直的，那么视其为 start。
+- start：沿横轴的起点开始依次排列，Widget 之间紧密相连无间隙。
+- end：沿横轴的终点开始依次排列，Widget之间紧密相连无间隙。
+- center：沿横轴中心排列。
+- stretch：强制撑满横轴
+- baseline：沿横轴与基线对齐，如果主轴是垂直的，那么视其为 start。
 
 在这里我们通过对 Row 的属性进行如下更改，将其设置为 end 效果。
 
@@ -496,7 +496,7 @@ Row(
 
 ![Flutter Inspector-Row](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-Row.png)
 
-我们可以看到这个 Row 在交叉轴上包裹住了它的 children，现在对他来说，不管是 start 还是 end，显示效果就都一样了，那么这种情况应该怎么处理呢。
+我们可以看到这个 Row 在横轴上包裹住了它的 children，现在对他来说，不管是 start 还是 end，显示效果就都一样了，那么这种情况应该怎么处理呢。
 
 为了让 Row 尽可能扩大并充满父组件（这里是整个屏幕），我们可以在这个 Row 组件的外部包裹一个 `SizedBox.expand` 组件。
 
@@ -516,11 +516,11 @@ Widget build(BuildContext context) {
     ));
 ```
 
-然后我们刷新屏幕，这时候你应该会发现这三个 Widget 在交叉轴上都已经跑到 end 的位置了。
+然后我们刷新屏幕，这时候你应该会发现这三个 Widget 在横轴上都已经跑到 end 的位置了。
 
 ![Row-CrossAxis-end.png](./pic/Row-CrossAxis-end.png.png)
 
-在 Flutter Inspector 中我们可以看到，这时候 Row 已经撑满了整个屏幕，这样在它的交叉轴上就有足够的空间进行布局了。而默认 Row 在交叉轴会使用 center 的对齐。
+在 Flutter Inspector 中我们可以看到，这时候 Row 已经撑满了整个屏幕，这样在它的横轴上就有足够的空间进行布局了。而默认 Row 在横轴会使用 center 的对齐。
 
 了解完 Row 的对齐方式，现在我们来看下一个属性 `MainAxisSize`，这个属性的作用将会决定 Row 在主轴上如何进行扩展。在之前我们可以看到，主轴上的 Widget 不需要对 Row 额外增加 SizedBox 用以扩展就直接撑满了整个主轴，原因就在于 Flutter 默认使用 MainAxisSize.max。也就是只要主轴有足够的空间就会尽可能大，直到占有所有空间。同样的 MainAxisSize 也是一个 枚举，提供了下面两种选择
 
@@ -587,10 +587,10 @@ Row(
 
 ![Column Axis](./pic/Column Axis.png)
 
-在 Column 中主轴则是从上至下，交叉轴则是从左至右。同样的，它和 Row 有着如出一辙的属性
+在 Column 中主轴则是从上至下，横轴则是从左至右。同样的，它和 Row 有着如出一辙的属性
 
 - MainAxisAlignment：主轴对齐方式
-- CrossAxisAlignment：交叉轴对齐方式
+- CrossAxisAlignment：横轴对齐方式
 - MainAxisSize：主轴扩展方式
 - VerticalDirection：在竖直线上的方向，和 Row 中的 TextDirection 作用类似
 - TextBaseline：基线对齐方式，很少使用
@@ -624,7 +624,7 @@ Widget build(BuildContext context) {
 
 Cool！你已经学会了基本的布局方式了，但是你肯定还是会有些晕，各种属性对你来说印象肯定还是不深刻，最好的学习编程方式就是动手练习。现在就动手练练吧，看看你写出来的代码和想象中的样子是否一致，你会收获更多！
 
-## Flutter 中的 Flex 布局
+## X.1.5 Flutter 中的 Flex 布局
 
 在上一节我们学习了 Column 和 Row 两种多 child 布局的组件，但是感觉好像还是差一点灵活性。然而这并不是 Column 和 Row 的全部，Flex 将为它们带来更加强大的灵活性。
 
@@ -720,7 +720,7 @@ Flex 需要传入一个必选参数 direction，这个参数将决定 Flex 究�
 
 这个 Widget 不仅具有 flex 因子，而且具有两种不同的方式来进行扩展，通过 fit 属性进行控制。
 
-- Flexfit.tight（严密）：强制小部件扩展充满剩余空间
+- Flexfit.tight（严密）：强制小部件扩展充满剩余空间（Expanded 实际上就是使用了该属性的 Flexible 的包装）
 - Flexfit.loose（松散）：小部件可以按照最大进行扩展（当小部件在主轴上没有高度时），但是允许其更小。
 
 我们来通过两个例子理解这个小部件。
@@ -818,9 +818,14 @@ children: <Widget>[
 
 实际上在进行布局的时候分为以下六个步骤；
 
-- 首先按照不受限制的主轴约束将 children 中没有 Flex 因子（没有套 Expanded）的 Widget 进行布局。如果 [crossAxisAlignment](https://docs.flutter.io/flutter/widgets/Flex/crossAxisAlignment.html) 是 [CrossAxisAlignment.stretch](https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html)，则将会在 交叉轴上尽可能延伸，也就是尽可能充满父级空间。
-- 按照 Flex 中存在的 flex 因子，在主轴上取最大约束，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）
-- 然后将使用了 flex 因子的 child 在 交叉轴方向上根据其因子 按照比例划分剩余空间。
-- 
+- 首先按照不受限制的主轴约束将 children 中没有 Flex 因子（没有套 Expanded）的 Widget 进行布局。如果 [crossAxisAlignment](https://docs.flutter.io/flutter/widgets/Flex/crossAxisAlignment.html) 是 [CrossAxisAlignment.stretch](https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html)，则将会在 横轴上尽可能延伸，也就是尽可能充满父级空间。
+- 按照 Flex 中存在的 flex 因子，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）然后将使用了 flex 因子的 child 在 横轴方向上根据其因子 按照比例划分剩余空间。
+- 像步骤 1 那样 对那些剩下的有相同 横轴约束的 children 进行布局，但是在主轴上将根据步骤 2 中分配的空间使用 max 约束，而不是使用 无边界 的主轴约束。（也就是是说在 2 划分的范围内，主轴尽可能大）当使用了 Flexible.tight 的 child 将会强制拉伸到其的 flex 因子所占空间大小（严格约束：Flexible.tight / Expanded 都会让它的 child 进行强制拉伸，无视其自身的高度）而使用了 Flexible.loose 的属性将会优先使用其自身的高度，若 child 本身没有高度，那么则会按照 flex 因子进行拉伸。（松散约束：Flexible.loose 包裹的 child 具有此种约束）
+- Flex 的横轴约束将使用 child 的横轴能达到的最大值，它将满足传入的约束。（也就是说child Widget 在横轴为设置长度那么就会被强制拉伸，假若有长度那么就会使用其长度）
+- Flex 在主轴上按照 主轴大小（mainAxisSize）属性决定其长度，如果 mainAxisSize 为 max，那么 Flex 主轴范围将会尽可能大。如果是 min 那么 Flex 将会包裹子节点。
+- 根据 mainAxisAlignment 和 crossAxisAlignment 确定每个 child 的位置。（也就是我们上一节所提到的，start、end、spaceBetween…)
 
-我们可以看到，通过引入 loose 确实增加了其布局灵活性，然而同时也让整个 layout 变得更加复杂，更加难以预测。在实际的布局过程中，Expanded 是一个更佳的选择。
+你并不需要将这个流程整个记下来，它仅仅是让你能够更加深刻的理解 Flex 的布局行为而已。简单来说，它是按照 计算非 flex 控件大小 -> 计算 flex 控件大小 -> 计算位置 这样的过程完成了整个布局行为。
+
+我们可以看到，通过引入 loose 确实增加了其布局灵活性，然而同时也让整个 layout 变得更加复杂，更加难以预测。在实际的布局过程中，Expanded 是一个更佳的选择。我们会在之后的练习中不断使用到 Flex 布局，之后可以在实战练习中细细体会。
+
