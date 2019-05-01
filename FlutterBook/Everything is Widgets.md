@@ -154,7 +154,7 @@ class App extends StatelessWidget {
 
 我们和之前一样，创建一个叫做 App 的类并继承至 Stateless Widget，在 build 方法中我们返回一个 MaterialApp。它没有任何的界面，纯粹作为功能组件使用。现在我们想要快速的 搭建起一套基础界面，就像下面这样。
 
-![](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Scaffold-Demo.png)
+![](./pic/Scaffold-Demo.png)
 
 这是一个非常常见的一种 Material 设计布局方式，顶部有一个导航栏，左边有一个可以点开的抽屉，下面有一个浮动按钮。为了让开发者们能够更加方便的快速搭建起这样一个布局，Flutter 为我们提供了一个 脚手架 —— Scaffold。一开始我其实也不太习惯这个名字，似乎是建筑工地修房子，就会先搭建起一个脚手架，然后就可以沿着这个架子慢慢往上修。在这里你可以把它就想像成一张纸，纸张背面已经为我们规划好了一些常见的布局位置，而我们只需要把想要的位置选出来然后把组件放上去，就可以了。听上去好像很简单，让我们来试试吧。
 
@@ -274,7 +274,7 @@ Widget build(BuildContext context) {
 
 Align 最主要的参数就是 alignment，这个属性需要接受一个 `AlignmentGeometry` 作为参数。我们可以创建一个 Alignment 对象来对其进行描述（它是 `AlignmentGeometry` 的子类），并给它 (x , y) 坐标。我们这里给了原点坐标，现在你的 浮动按钮应该被固定在了屏幕中心了，刷新你的代码看看吧。
 
-![75236D76-174F-41CE-8982-1A422A768328](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/75236D76-174F-41CE-8982-1A422A768328.png)
+![align-0-0](./pic/align-0-0.png)
 
 除了使用具体的值进行描述，我们还可以使用一些已经调整好的枚举值进行使用。
 
@@ -339,11 +339,11 @@ Widget build(BuildContext context) {
 
 这两个参数设置为 1 会发生什么呢，我们可以通过 Flutter 官方提供的 Flutter Inspector 进行检查。大家若是使用的 Android Studio 那么这项功能会在你的 IDE 右侧有一个这样的按钮。
 
-![Flutter Inspector](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter%20Inspector.png)
+![Flutter Inspector](./pic/Flutter%20Inspector.png)
 
 如果你使用的 VS Code 那么你可以使用 Dart Code ，参考下列链接 <https://dartcode.org/>。现在你需要点击下面这个按钮。
 
-![Flutter Inspector-button](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter%20Inspector-button.png)
+![Flutter Inspector-button](./pic/Flutter%20Inspector-button.png)
 
 然后点击屏幕上的 Widget，你会看到在你的屏幕上出现了几根线，它们标注出了你的 Widget 的范围，即使是一些看不见的 Widget 同样也被标记出。
 
@@ -370,7 +370,7 @@ Widget build(BuildContext context) {
   }
 ```
 
-![align-factor-1](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/align-factor-2.png)
+![align-factor-1](./pic/align-factor-2.png)
 
 我们再来解释一下布局发生了什么。首先 Center 小部件充满了整个屏幕，然后把它的 child 也就是 Align 小部件居中，然后 Align 小部件有两倍的其 child 的宽度，然后根据它的对齐方式，在它的范围内进行右下角对齐。
 
@@ -494,7 +494,7 @@ Row(
 
 然而当你刷新屏幕之后，可能会发现和你想象中不一样。看上去并没有变化，我们任然通过 Flutter Inspector 进行检查。
 
-![Flutter Inspector-Row](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Flutter Inspector-Row.png)
+![Flutter Inspector-Row](./pic/Flutter Inspector-Row.png)
 
 我们可以看到这个 Row 在横轴上包裹住了它的 children，现在对他来说，不管是 start 还是 end，显示效果就都一样了，那么这种情况应该怎么处理呢。
 
@@ -560,7 +560,7 @@ Widget build(BuildContext context) {
 
 然后我们再使用 Flutter Inspector 进行查看。
 
-![Row-MainAxisSize-min](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Row-MainAxisSize-min.png)
+![Row-MainAxisSize-min](./pic/Row-MainAxisSize-min.png)
 
 可以看到，现在的 Row 已经在主轴上尽可能小，直到刚好包裹子控件的大小。
 
@@ -710,7 +710,7 @@ Flex 需要传入一个必选参数 direction，这个参数将决定 Flex 究�
 
 我们给蓝色 `Container` 套上 `Expanded` 并将其 flex 因子设置为 2，第二个 只套一个 `Expanded` 不设置其 flex 因子，第三个 `Container` 保持不变，效果如下。
 
-![Expanded-flex](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/Expanded-flex.png)
+![Expanded-flex](./pic/Expanded-flex.png)
 
 我们可以看到 蓝色 和 红色 的比例是 2:1，而没有套 Expanded 的部分没有变化。在主轴上我们看到使用 Expanded 能够让我们按照比例进行布局。
 
