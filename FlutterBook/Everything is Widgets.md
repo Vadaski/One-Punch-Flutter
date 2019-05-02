@@ -225,7 +225,7 @@ Widget build(BuildContext context) {
 
 使用 Text Widget 很简单，只需要向 Text Widget 的构造函数 传入一个字符串就好了。
 
-## X.1.3 基本的单子布局组件
+## X.1.3 基本的单子布局组件 Align / Center
 
 在上一节我们已经接触到了 Flutter 的 两个最常见的部件 MaterialApp 以及 Scaffold。你肯定已经对 Flutter 构建界面的方式有了一个初步印象了，Good。现在我们来看看 Flutter 中的布局。
 
@@ -387,7 +387,7 @@ class Center extends Align {
 
 怎么样，现在你对 Flutter 的布局方式是不是理解的更加深刻了呢，但是光看不练很快你就会忘，赶紧试试吧。
 
-## X.1.4 基本的布局组件 Column / Row
+## X.1.4 基本的多子布局组件 Column / Row
 
 在上一节我们尝试了使用 `Center` `Align`  对 单个 Widget 进行布局。你是否已经掌握了呢。 在这一节中我们将会学习 Flutter 的两个最基本的多子布局控件 Column 和 Row。可以说大部分的布局都将依赖于行布局/列布局来进行实现。
 
@@ -624,7 +624,7 @@ Widget build(BuildContext context) {
 
 Cool！你已经学会了基本的布局方式了，但是你肯定还是会有些晕，各种属性对你来说印象肯定还是不深刻，最好的学习编程方式就是动手练习。现在就动手练练吧，看看你写出来的代码和想象中的样子是否一致，你会收获更多！
 
-## X.1.5 Flutter 中的 Flex 布局
+## X.1.5 Flutter 中的 Flex 布局 Expanded / Flexible
 
 在上一节我们学习了 Column 和 Row 两种多 child 布局的组件，但是感觉好像还是差一点灵活性。然而这并不是 Column 和 Row 的全部，Flex 将为它们带来更加强大的灵活性。
 
@@ -829,3 +829,272 @@ children: <Widget>[
 
 我们可以看到，通过引入 loose 确实增加了其布局灵活性，然而同时也让整个 layout 变得更加复杂，更加难以预测。在实际的布局过程中，Expanded 是一个更佳的选择。我们会在之后的练习中不断使用到 Flex 布局，之后可以在实战练习中细细体会。
 
+**试一试**：尝试使用多个组件，直到整个屏幕无法装下 Row / Column 中的组件为止。
+
+```dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(children: <Widget>[
+        Container(height: 300,color: Colors.blueAccent,),
+        Container(height: 300,color: Colors.redAccent,),
+        Container(height: 300,color: Colors.yellowAccent,),
+      ],)
+    );
+  }
+```
+
+![](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/flex-overflow.png)
+
+我们可以看到在 Column 的主轴尾部出现了一个警告区域，提示我们 bottom overflowed by 4.0 pixels。这是我们一定要避免的情况，我们不应该让其 children 比它能够承受的最宽限度还要大，我们通常可以使用 flex 布局来避免出现此类情况。如果你想要进行滑动，Flutter 提供了可滑动系列组件来专门处理滑动的情况。
+
+但是有时候我们仅仅只是为了保证 Flex 不出现此类情况。例如登陆页面，有些手机很长有些很短，屏幕比例各不相同，这就对我们的适配带来了问题。Flutter 为这种情况专门提供了一个 SingleChildScrollView Widget 进行处理。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(children: <Widget>[
+          Container(height: 300,color: Colors.blueAccent,),
+          Container(height: 300,color: Colors.redAccent,),
+          Container(height: 300,color: Colors.yellowAccent,),
+        ],),
+      )
+    );
+  }
+```
+
+现在我们可以让超出范围的 Column 变得可以滑动，前提是 SingleChildScrollView 的滚动方向 scrollDirection 必须与超出范围的方向一致，在这里我们默认是水平滑动。
+
+另外需要注意的是，使用 SingleChildScrollView 代价很高，它不具有 Sliver 的 自动回收/懒加载特性，超出屏幕的部分也参与了布局及渲染计算，大量使用会降低性能，请谨慎使用。
+
+## X.1.6 基本边距小部件 Padding
+
+我们在前面已经介绍了一些常用的布局小部件，除了这些布局以外，在开发过程中还会有一个使用频率非常高的小部件 `Padding` 这个小部件能够在 它的 child 外创造出一段 space 进行填充。我们还是来看一段代码理解一下。
+
+``` dart
+Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          color: Colors.blueAccent,
+        ),
+      )),
+    );
+  }
+```
+
+我们在屏幕上有一个 蓝色的 `Container`，由于我们们并没有给它设置位置，那么他会尽可能扩展自己，并充满屏幕。然后现在我们给它一个 `Padding` 并在所有边上填充一个 8 dp 的边距，现在整个屏幕会是这样。
+
+![padding](./pic/padding.png)
+
+实际上 `Padding` Widget 只关心一个参数，也就是 padding，它是一个 `EdgeInsetsGeometry` 实例。`EdgeInsetsGeometry` 是抽象类，也是 `EdgeInsets` 的基类。
+
+通常我们会使用  `EdgeInsets` 设置边距。
+
+- EdgeInsets.fromLTRB：分别设置 左端、顶端、右端、底端的边距
+- EdgeInsets.all：设置全边距
+- EdgeInsets.only：设置任意边的边距
+- EdgeInsets.symmetric：设置水平（horizontal）边距或垂直（vertical）边距
+
+这些属性都很好理解，我们就不一一展示了，需要注意的是这些创建 `EdgeInsets` 的方法都是 `const` 的。在之前的 Dart 语法中我们学习到，`const` 定义的变量是编译时常量，必须在编译时就已经确定。所以这里就不能够传入某一个变量，只能是确切的数字。
+
+除了 `EdgeInsets`,我们还可以使用 `EdgeInsetsDirectional` ，它与  `EdgeInsets` 不同的是它还与方向相关。还记得我们上一节提到的 `Column` / `Row` 都存在一个方向属性吗，`EdgeInsetsDirectional` 会根据其方向调整填充的边。同样的它也具有 `start`、`end`、`top`、`bottom` 四个属性。我们来看一个例子。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Padding(
+          padding: EdgeInsetsDirectional.only(start: 100),
+          child: Container(
+            color: Colors.blueAccent,
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+这里我们让其 textDirection 设置为默认的 ltr （left to right）效果如下。
+
+![](./pic/direction-ltr.png)
+
+在 start 处增加了一个 100 dp 的 padding，然而当我们将 textDirection 切换到 rtl（right to left）时将会是这样。
+
+![](./pic/direction-rtl.png)
+
+verticalDirection 同理，会在竖直方向上根据其方向进行填充。不过这个属性用的很少，更多的还是使用 `EdgeInsets`。
+
+除了这些常规能够进行自定义边距的类之外，Flutter 还为特殊情况预设了一些 EdgeInsets。
+
+我们都知道现在手机屏幕不再是简单的长方形了，异形屏、挖孔屏等等我们都需要对其进行适配。通过 MediaQuery 我们能够获取到手机的这些信息。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Padding(
+          padding: MediaQuery.of(context).padding,
+          child: Container(
+            color: Colors.blueAccent,
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+我们可以通过 `MediaQuery.of(context).padding` 来获取设备提供的 Padding，它将返回一个 `EdgeInsets` ,效果如下。
+
+![](./pic/mediaQuery-padding.png)
+
+现在我们就不用担心内容部分被遮挡了，同时我们可以使用 copyWith 来对这些属性进行覆盖。
+
+`padding: MediaQuery.of(context).padding.copyWith(bottom: 0),` 
+
+除了 padding，`MediaQuery` 还能够查到 viewInsets，当我们的 app 被某些其他部件遮挡时将会出现 viewInsets，例如软键盘。我们可以通过这个属性来监测目前的软件盘高度等，只做了解就好。假若你有前端的开发经历，你可能会问有没有 margin。在 Flutter 的 Container 中也有 margin 属性，但是观察源码我们会发现实际上 margin 也是由 padding 实现的。
+
+## X.1.7 展示文字 Text
+
+在应用中展示一段文字几乎是我们最基础的功能之一，在 Flutter 中由于它是声明式的写法，我们可以使用 Text Widget 非常轻松的显示一串文字。
+
+``` dart
+Text('Hello Flutter')
+```
+
+我们在 位置参数 data 传入一个 String 类型，这个 Widget 将会在屏幕上显示 "Hello Flutter" 字样。位置参数是必传参数，在学习 Dart 语法的时候你已经了解过了。
+
+在 Text Widget 中我们可以使用 TextStyle 对它的外观装饰进行设置。我们来看一下一些比较常用的属性。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Hello Flutter!',
+          style: TextStyle(
+            //字体颜色
+            color: Colors.blue,
+            //字体所占用空间的背景颜色
+            backgroundColor: Colors.black,
+            //文字装饰
+            decoration: TextDecoration.underline,
+            //字体大小,单位是逻辑像素
+            fontSize: 32,
+            //字体粗细
+            fontWeight: FontWeight.w600,
+            //字体样式（正常/斜体）
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/textStyle.png)
+
+字体对齐的设置没有放在 TextStyle 中，而是单独成为了一个属性 textAlign。实际上和之前的对齐是一致的，而字体方向则是由 textDirection 进行控制，这里就不再过多赘述。
+
+在使用字体需要注意的一点是，当我们文字过多，超过了当前行可显示范围时，应该如何操作？我们来看下面这个例子。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Flutter allows you to build beautiful native apps on iOS and Android from a single codebase.',
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/text-muti-line.png)
+
+我们可以看到，在左右是有边界约束，上下是无边界约束的时候，Text 超过了该行可显示范围时会自动换行。
+
+那么假若上下宽度被限定了，但是还是超过可显示范围会怎么样呢？
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: SizedBox(
+          height: 20,
+          child: Text(
+            'Flutter allows you to build beautiful native apps on iOS and Android from a single codebase.',
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/text-limit-height.png)
+
+它将不会显示超出部分，所以我们尽量在使用 Text 的时候使用弹性的高度（不限定死）。除了限定高度不足以外，另外一种常见的情况是，左右产生了无边界约束造成文字溢出异常。
+
+当我们使用 Row 的时候这个情况会非常容易出现。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: SizedBox.expand(
+        child: Row(
+          children: <Widget>[
+            Text('Flutter allows you to build beautiful native apps on iOS and Android from a single codebase.')
+          ],
+        ),
+      )
+    );
+  }
+```
+
+![](./pic/text-row-overflow.png)
+
+这个情况和我们之前在 Flex 中提到的超出 Flex 主轴范围的情况是一致的，当然你可以使用 SingleChildScrollView 进行解决。若使用了 SingleChildScrollView 那么这行文字将会变得可以横向滚动。
+
+除了 SingleChildScrollView，你也可以使用 flex 布局对其进行处理。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: SizedBox.expand(
+        child: Row(
+          children: <Widget>[
+            Expanded(child: Text('Flutter allows you to build beautiful native apps on iOS and Android from a single codebase.'))
+          ],
+        ),
+      )
+    );
+  }
+```
+
+这里使用 Expanded 来包裹 Text，那么最终会让这个 Text '感知' 到最大边界，然后就可以进行自动换行了。
+
+除了自动换行，Text 还能够设置最大行树。例如我们设置其最大行树为 1,那么多余 1 行的部分将不会显示。
+
+在处理超出部分的时候，我们通常会想在末尾进行一下装饰，例如使用省略号代表还有未显示完整的内容。我们可以使用 overFlow 属性进行设置。
+
+- clip：直接剪切掉溢出部分。
+- fade：淡出溢出部分。
+- ellipsis：使用省略号表示溢出部分。
+- visible: 强制渲染文字溢出部分（即使你看不见）
+
+我们这里就只看一下 ellipsis 的情况。
+
+``` dart
+Text(
+  'Flutter allows you to build beautiful native apps on iOS and Android from a single codebase.',
+   maxLines: 1,
+   overflow: TextOverflow.ellipsis,)
+```
+
+![textOverflow-ellipsis](./pic/textOverflow-ellipsis.png)
+
+当然 Text 还有很多其他的属性，例如 国际化，使用自定义字体等，我们在这里就不一一说明了，需要用到的时候直接查阅 api 文档就好。
