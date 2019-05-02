@@ -251,7 +251,7 @@ Widget build(BuildContext context) {
 
 那么如何控制这个 `FloatingActionButton` 的位置呢。答案是使用 `Align` Widget！要是用 Align 我们得先回顾一下初中的知识，这是由于 Flutter 引入了基于笛卡尔坐标系（x / width）和Y /高度。
 
-![Cartesian coordinate system](./pic/Cartesian coordinate system.png)
+![Cartesian coordinate system](./pic/Cartesian-coordinate-system.png)
 
 值得一提的是，看上去这个坐标系和我们之前见过的或许不太一样，它的 y 轴是竖直向下的。中心坐标为 (0,0)，中心到屏幕边缘的距离为 1。
 
