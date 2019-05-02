@@ -339,7 +339,7 @@ Widget build(BuildContext context) {
 
 这两个参数设置为 1 会发生什么呢，我们可以通过 Flutter 官方提供的 Flutter Inspector 进行检查。大家若是使用的 Android Studio 那么这项功能会在你的 IDE 右侧有一个这样的按钮。
 
-![Flutter Inspector](./pic/Flutter%20Inspector.png)
+![Flutter Inspector](./pic/Flutter-Inspector.png)
 
 如果你使用的 VS Code 那么你可以使用 Dart Code ，参考下列链接 <https://dartcode.org/>。现在你需要点击下面这个按钮。
 
@@ -585,7 +585,7 @@ Row(
 
 当我们学习过 Row 组件之后，相信 Column 组件对你来说也是小菜一碟。
 
-![Column Axis](./pic/Column Axis.png)
+![Column Axis](./pic/Column-Axis.png)
 
 在 Column 中主轴则是从上至下，横轴则是从左至右。同样的，它和 Row 有着如出一辙的属性
 
