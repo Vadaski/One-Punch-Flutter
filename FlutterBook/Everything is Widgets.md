@@ -1098,3 +1098,135 @@ Text(
 ![textOverflow-ellipsis](./pic/textOverflow-ellipsis.png)
 
 当然 Text 还有很多其他的属性，例如 国际化，使用自定义字体等，我们在这里就不一一说明了，需要用到的时候直接查阅 api 文档就好。
+
+## X.1.8 展示图片 Image
+
+和文字一样，图片也算是 app 中必不可缺的一个要素。在 Flutter 中要展示一张图片也很简单，使用 Image Widget 就能搞定绝大多数问题。Image 控件支持非常多数据格式，包括：JPEG，PNG，GIF，动画GIF，WebP，动画WebP，BMP和WBMP，可以说是很贴心了。我们先来看看它的构造函数。
+
+- Image()：使用 ImageProvider 来展示图片
+- Image.network()：使用 URL 处获取的网络图片进行展示
+- Image.asset()：使用 Asset 资源图片进行展示
+- Image.file()：使用本地图片文件进行展示
+- Image.memory：使用内存中的字节数据进行展示
+
+在显示一个 Image 的时候，我们需要考虑的第一个问题就是它的来源。一个图片可能来自于网络，也可能需要使用打包进了资源的图片，还可以是来自于手机中的图片，以及原始 byte 数据。所以需要在数据来源着一层进行抽象，识别各个来源的数据，并转换成统一的类进行处理。
+
+图片实际上是一种二进制文件，ImageProvider 为不同数据来源的 Image 提供了统一的接口并使用全局的 imageCache 进行缓存，我们通常会直接使用其实现类进行使用。
+
+- NetworkImage：下载并解析 url 中提供的图片
+- FileImage：将文件解析为图片
+- MemoryImage：将 `Uint8List` 的缓冲区解析为图片
+- ExactAssetImage：从资源文件中获取并解析图片，并显式指定比例。它会忽略设备的像素比率和大小。
+- AssetImage：从资源文件中根据传递给[解析](https://docs.flutter.io/flutter/painting/ImageProvider/resolve.html)的配置中给出的设备像素比率和大小，为当前上下文选择最合适的 Asset 将其解析为图片。
+
+我们来看一看如何使用这些 ImageProvider。
+
+![Image](./pic/Image.png)
+
+``` dart
+Image(
+      image: NetworkImage(
+      'https://flutter.dev/assets/homepage/news-2-599aefd56e8aa903ded69500ef4102cdd8f988dab8d9e4d570de18bdb702ffd4.png'))
+```
+
+NetworkImage 的使用相当简单，传入 url 即可。你还可以通过传入 headers 来定义 http 请求的头部，不过一般不需要进行处理。
+
+``` dart
+Image(
+	image: FileImage(File("/Users/gs/Downloads/flutter.png"))
+)
+```
+
+一般来说获取本机储存的图片将会用到 FileImage，只需要传入一个 File 对象即可。需要注意的是，使用 File 的时候 需要导入 dart:io 包。
+
+``` dart
+Image(
+      image: MemoryImage(Uint8List.fromList(...))
+    )
+```
+
+通常我们在使用后端云提供的 图片储存服务的时候将会以 int 数组的形式进行储存，如下图。
+
+![ImageByte](./pic/ImageByte.png)
+
+当我们获取的是这种类型的数据的时候，可以使用 `Uint8List.fromList` 生成 `Uint8List` 数据，然后使用 MemoryImage 将其进行转化。
+
+最后是显示 Asset 中的 image。首先我们要简单了解一下什么是 Asset（资源）。在我们的应用当中，为了提高用户体验，我们通常会将提前下载好的资源（可以是图片，字体，文件等等）打包进应用当中，用户打开应用后就不需要再通过网络加载这些资源，直接从 AssetBundle 中进行获取，可以大大提高加载速度。现在我们来向这个应用中添加一个图片资源。
+
+首先我们需要在项目**根**目录下创建一个文件夹，我把它命名为 asset。创建方法是在 Project 模式下右键项目文件夹 -> new -> Directory 然后在弹出的对话框中进行命名即可。（注意一定是在根目录进行创建。）当你创建完毕后，你的应用目录将会是这样。
+
+![project-structure-asset](./pic/project-structure-asset.png)
+
+然后我们将下载好的图片拖到这个文件夹中，并进行命名。我这里直接将其命名为 flutter.png。
+
+然后我们需要在 pubspec.yaml 中声明我们的资源文件。如下图在 flutter 下一级按照该格式进行声明。
+
+![pubspec-asset](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/pubspec-asset.png)
+
+然后我们运行 flutter packages get 或者 Android Studio 右上方的 get 按钮，刷新资源。
+
+注意：yaml 使用缩进表达层级关系，所以其语法对缩进的要求非常严格，在 flutter 下进行缩进代表它属于 flutter。且缩进必须是 2 个空格，或者一个 tab，否则会出错。
+
+当你所描述的文件夹中不存在这个图片文件的时候，将会报这个错误：No file or variants found for asset: assets/flutter.png. 那么你就应该去检查你的图片和文件夹是否到位。
+
+当这些都准备完毕后，重新编译应用，资源文件就会被打包进 app 中，我们就可以使用这个资源文件了。
+
+``` dart
+Image(image: AssetImage('assets/flutter.png')
+```
+
+除了直接显示资源文件，我们通常还会为不同分辨率的设备准备不同的图片资源，AssetImage 能够根据当前设备的分辨率，自动选择正确的图片资源。
+
+我们刚提到了 image 的构造函数，Image.network、Image.asset：Image.file、Image.memory 可以完成上述操作。实际上 这些构造函数就是对各种 ImageProvider 的封装。我就不在多做重复介绍了。
+
+在使用 Image 的时候，我们通常需要对 Image 进行适配来匹配显示范围的大小。例如我们上传的头像是一个矩形，但是我们头像是一个方形，那可能我们就需要对其进行裁剪。在 Flutter 中我们使用 fit 属性来实现这些功能。 Fit 实际上是 Boxfit，它有一堆枚举值用来决定图像应该如何显示。我们来看一看。
+
+Contain：尽可能大，但是还是会显示完整的图片，按照匹配的最长的那条边来。
+
+![box_fit_contain](./pic/box_fit_contain.png)
+
+Cover:尽可能小，同时覆盖整个父级空间。也就是说会裁掉比较长的那条边。
+
+![box_fit_cover](./pic/box_fit_cover.png)
+
+fill：忽略原 Image 的宽高比，强制填满父级所给的空间。
+
+![box_fit_fill](./pic/box_fit_fill.png)
+
+fitHeight：强制按照高度进行匹配，若宽边超出盒子则会被裁掉。
+
+![box_fit_fitHeight](./pic/box_fit_fitHeight.png)
+
+None：按照图片原始大小进行显示，超出盒子的部分会被裁掉。
+
+![box_fit_none](./pic/box_fit_none.png)
+
+scaleDown : 显示完整的图片，若图片比目标盒子要小，则不进行放大以适配盒子。
+
+![box_fit_scaleDown](./pic/box_fit_scaleDown.png)
+
+然后我们来看一段样例代码：
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Image.network(
+          'https://flutter.dev/assets/homepage/news-2-599aefd56e8aa903ded69500ef4102cdd8f988dab8d9e4d570de18bdb702ffd4.png',
+          height: double.infinity,
+          fit: BoxFit.fitHeight,
+        ),
+      ),
+    );
+  }
+```
+
+![image-fillHeight](./pic/image-fillHeight.png)
+
+这里使用 fillHeight 强制将 Image 充满了它能够达到的最大高度（这里是屏幕高度）。fit 属性在使用 Image 的时候经常用到，动手试一试才会理解的更深哦。
+
+刚才提到 ImageProvider 是用于屏蔽图片数据来源，那么真正渲染图片是由什么来做的呢。
+
+我们通过观察源码可以发现，实际上 Image Widget 在 build 中使用了 RawImage。skia 通过将 Uint8List 转化为 ui.image 然后使用 ImageInfo 作为包装传给 RawImage，然后通过 RawImage 生成渲染对象 （RenderImage）进行渲染。这里仅作了解。
+
