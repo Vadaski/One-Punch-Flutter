@@ -622,6 +622,8 @@ Widget build(BuildContext context) {
 
 可以观察到，我们的代码中 children 的顺序和显示的顺序是逆反的，且从底部开始逐渐向上排列。
 
+小提示：想要判断哪根轴是主轴，哪根轴是横轴其实很简单。它能够进行延展摆放其 child 的方向就是主轴，与其垂直的就是横轴。这样就很好记忆啦。
+
 Cool！你已经学会了基本的布局方式了，但是你肯定还是会有些晕，各种属性对你来说印象肯定还是不深刻，最好的学习编程方式就是动手练习。现在就动手练练吧，看看你写出来的代码和想象中的样子是否一致，你会收获更多！
 
 ## X.1.5 Flutter 中的 Flex 布局 Expanded / Flexible
@@ -819,7 +821,7 @@ children: <Widget>[
 实际上在进行布局的时候分为以下六个步骤；
 
 - 首先按照不受限制的主轴约束将 children 中没有 Flex 因子（没有套 Expanded）的 Widget 进行布局。如果 [crossAxisAlignment](https://docs.flutter.io/flutter/widgets/Flex/crossAxisAlignment.html) 是 [CrossAxisAlignment.stretch](https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html)，则将会在 横轴上尽可能延伸，也就是尽可能充满父级空间。
-- 按照 Flex 中存在的 flex 因子，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）然后将使用了 flex 因子的 child 在 横轴方向上根据其因子 按照比例划分剩余空间。
+- 然后按照 Flex 中存在的 flex 因子，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）然后将使用了 flex 因子的 child 在 横轴方向上根据其因子 按照比例划分剩余空间。
 - 像步骤 1 那样 对那些剩下的有相同 横轴约束的 children 进行布局，但是在主轴上将根据步骤 2 中分配的空间使用 max 约束，而不是使用 无边界 的主轴约束。（也就是是说在 2 划分的范围内，主轴尽可能大）当使用了 Flexible.tight 的 child 将会强制拉伸到其的 flex 因子所占空间大小（严格约束：Flexible.tight / Expanded 都会让它的 child 进行强制拉伸，无视其自身的高度）而使用了 Flexible.loose 的属性将会优先使用其自身的高度，若 child 本身没有高度，那么则会按照 flex 因子进行拉伸。（松散约束：Flexible.loose 包裹的 child 具有此种约束）
 - Flex 的横轴约束将使用 child 的横轴能达到的最大值，它将满足传入的约束。（也就是说child Widget 在横轴为设置长度那么就会被强制拉伸，假若有长度那么就会使用其长度）
 - Flex 在主轴上按照 主轴大小（mainAxisSize）属性决定其长度，如果 mainAxisSize 为 max，那么 Flex 主轴范围将会尽可能大。如果是 min 那么 Flex 将会包裹子节点。
