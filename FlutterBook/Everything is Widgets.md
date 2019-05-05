@@ -845,7 +845,7 @@ Widget build(BuildContext context) {
   }
 ```
 
-![](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/flex-overflow.png)
+![](./pic/flex-overflow.png)
 
 我们可以看到在 Column 的主轴尾部出现了一个警告区域，提示我们 bottom overflowed by 4.0 pixels。这是我们一定要避免的情况，我们不应该让其 children 比它能够承受的最宽限度还要大，我们通常可以使用 flex 布局来避免出现此类情况。如果你想要进行滑动，Flutter 提供了可滑动系列组件来专门处理滑动的情况。
 
@@ -1232,3 +1232,107 @@ Widget build(BuildContext context) {
 
 我们通过观察源码可以发现，实际上 Image Widget 在 build 中使用了 RawImage。skia 通过将 Uint8List 转化为 ui.image 然后使用 ImageInfo 作为包装传给 RawImage，然后通过 RawImage 生成渲染对象 （RenderImage）进行渲染。这里仅作了解。
 
+## X.1.9 图标 Icon
+
+在前面两节我们学习了 Flutter 中的基本组件 `Text` 和 `Image`。可以看到 Flutter 为我们开发做了非常多的简化，几乎不需要做什么额外的工作就能够显示这些基本的组件。除了上面两个以外，还有一个是我们经常会用到的。那就是 Icon（小图标）。Flutter 为我们已经制作好了大量精美的 Icon 内置在 SDK 中，我们直接使用即可。
+
+### Material Icon
+
+Icon Widget 接收一个 IconData 用来显示具体的 Icon，通常 Material 风格的 Icon 我们只需要使用 Icons.xxx 进行选择就好。然后可以通过 color 属性对其颜色进行调整。
+
+``` dart
+Icon(Icons.category,color:Colors.blue)
+```
+
+需要注意的是，要使用 Icon 其祖先节点必须要有 `Directionality` Widget。而这个组件通常是由 [WidgetsApp](https://docs.flutter.io/flutter/widgets/WidgetsApp-class.html)或 [MaterialApp](https://docs.flutter.io/flutter/material/MaterialApp-class.html) 自动引入的。并且确保 pubspec.yaml 中 uses-material-design: true。
+
+在 Material 官网可以看到所有 Material 风格的图标。地址：https://material.io/tools/icons/?style=baseline 
+
+ ![material-icons](./pic/material-icons.png)
+
+### Cupertino Icon
+
+除了 Google 的 Material Design，Apple 也有一套自己设计的图标，在 Flutter 中我们把它叫做 Cupertino Icon。要使用的话，需要我们通过引入 package 进行导入。正常创建项目或许会自带这个 package，不过使用之前最好还是检查一下。
+
+![pubspec-cupertinoIcons](./pic/pubspec-cupertinoIcons.png)
+
+然后在项目中，我们需要先导入 Cupertino package 才能使用 Cupertino Icon。
+
+``` dart
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(App());
+}
+
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Center(
+        child: Icon(
+          CupertinoIcons.battery_25_percent,
+          size: 100,
+          color: Colors.blueAccent,
+        ),
+      ),
+    );
+  }
+}
+```
+
+![cupertinoIcon](./pic/cupertinoIcon.png)
+
+对于 Cupertino Icon，你可以在这个 github 上查看所有图标列表：https://github.com/flutter/cupertino_icons/blob/master/map.png
+
+### 自定义 Icon
+
+除了使用 Flutter 自带的 Icons 以外，我们可能还需要使用设计师提供的或者图标库中下载的图标，现在我们将尝试使用第三方提供的 Icon。第三方 Icons 文件直接在网络上就可以进行搜素下载，这个事例的 Icon 来自 Font Awesome ：http://www.fontawesome.com.cn/
+
+我们下载好字体之后，将图标文件 fontawesome-webfont.ttf 放进资源目录下，我这里放在了 项目根目录/assets/icons 文件夹中。
+
+![custom-icon-package-structure](./pic/custom-icon-package-structure.png)
+
+然后当然就是去 pubspec 中声明这个字体文件啦。
+
+``` dart
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/flutter.png
+  fonts:
+    - family: fontawsome
+      fonts:
+        - asset: assets/icons/fontawesome-webfont.ttf
+```
+
+这里要注意 第一个 fonts 是有一个 tab（2个空格）的缩进，**-** 和**:** 的后面都有一个空格，否则 yaml 文件将不会正确识别。family 属性是可以自由命名的，`asset:` 后则是跟的目标文件的绝对路径，我们放在了 assets/icons 文件夹中。
+
+然后就是使用 `flutter packages get` 命令刷新资源，并重新编译 app 就可以了。
+
+在使用自定义 Icon 的时候，我们首先需要传入图标的 Unicode，这个在你下载 Icon 的网站上都会给出，例如我们这里是 f2d9。然后需要指定 fontFamily 属性，与刚才 pubspec.yaml 中声明的一致。 
+
+`IconData(0xf2d9, fontFamily: 'fontawsome'),`·
+
+我们来看看效果。
+
+![custom-fonts](./pic/custom-fonts.png)
+
+看到这里我们会发现，假如要一个一个 Unicode 进行查找，每次使用都需要去网站上查找，非常不方便。所以我们应该和 Flutter 一样，将其写在一个 Icon 库中，方便以后进行使用。
+
+``` dart
+class AwsomeIcons {
+  AwsomeIcons._();
+  
+  static const IconData threesixty = IconData(0xe577, fontFamily: 'fontawsome');
+
+  static const IconData threed_rotation = IconData(0xe84d, fontFamily: 'fontawsome');
+
+  static const IconData four_k = IconData(0xe072, fontFamily: 'fontawsome');
+  ...
+}
+
+```
+
+上面仅仅声明了一些 Icon，这个最终还是要根据自己的需要来。Icon 作为矢量图，不会因为分辨率失真，能够极大的保证其清晰度，并且可以减少应用加载的速度，动手试试吧。
