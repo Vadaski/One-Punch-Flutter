@@ -822,7 +822,7 @@ children: <Widget>[
 
 - 首先按照不受限制的主轴约束将 children 中没有 Flex 因子（没有套 Expanded）的 Widget 进行布局。如果 [crossAxisAlignment](https://docs.flutter.io/flutter/widgets/Flex/crossAxisAlignment.html) 是 [CrossAxisAlignment.stretch](https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html)，则将会在 横轴上尽可能延伸，也就是尽可能充满父级空间。
 - 然后按照 Flex 中存在的 flex 因子，将所有剩余空间划分成 K 等份，K 就是 flex 因子加起来的值（这个例子中是 1 + 2）然后将使用了 flex 因子的 child 在 横轴方向上根据其因子 按照比例划分剩余空间。
-- 像步骤 1 那样 对那些剩下的有相同 横轴约束的 children 进行布局，但是在主轴上将根据步骤 2 中分配的空间使用 max 约束，而不是使用 无边界 的主轴约束。（也就是是说在 2 划分的范围内，主轴尽可能大）当使用了 Flexible.tight 的 child 将会强制拉伸到其的 flex 因子所占空间大小（严格约束：Flexible.tight / Expanded 都会让它的 child 进行强制拉伸，无视其自身的高度）而使用了 Flexible.loose 的属性将会优先使用其自身的高度，若 child 本身没有高度，那么则会按照 flex 因子进行拉伸。（松散约束：Flexible.loose 包裹的 child 具有此种约束）
+- 像步骤 1 那样 对那些剩下的有相同 横轴约束的 children 进行布局，但是在主轴上将根据步骤 2 中分配的空间使用 max 约束，而不是使用 无边界 的主轴约束。（也就是是说在 2 划分的范围内，主轴尽可能大）当使用了 Flexible.tight 的 child 将会强制拉伸到其的 flex 因子所占空间大小（紧约束：Flexible.tight / Expanded 都会让它的 child 进行强制拉伸，无视其自身的高度）而使用了 Flexible.loose 的属性将会优先使用其自身的高度，若 child 本身没有高度，那么则会按照 flex 因子进行拉伸。（松散约束：Flexible.loose 包裹的 child 具有此种约束）
 - Flex 的横轴约束将使用 child 的横轴能达到的最大值，它将满足传入的约束。（也就是说child Widget 在横轴为设置长度那么就会被强制拉伸，假若有长度那么就会使用其长度）
 - Flex 在主轴上按照 主轴大小（mainAxisSize）属性决定其长度，如果 mainAxisSize 为 max，那么 Flex 主轴范围将会尽可能大。如果是 min 那么 Flex 将会包裹子节点。
 - 根据 mainAxisAlignment 和 crossAxisAlignment 确定每个 child 的位置。（也就是我们上一节所提到的，start、end、spaceBetween…)
@@ -1234,7 +1234,9 @@ Widget build(BuildContext context) {
 
 ## X.1.9 图标 Icon
 
-在前面两节我们学习了 Flutter 中的基本组件 `Text` 和 `Image`。可以看到 Flutter 为我们开发做了非常多的简化，几乎不需要做什么额外的工作就能够显示这些基本的组件。除了上面两个以外，还有一个是我们经常会用到的。那就是 Icon（小图标）。Flutter 为我们已经制作好了大量精美的 Icon 内置在 SDK 中，我们直接使用即可。
+在前面两节我们学习了 Flutter 中的基本组件 `Text` 和 `Image`。可以看到 Flutter 为我们开发做了非常多的简化，几乎不需要做什么额外的工作就能够显示这些基本的组件。
+
+除了上面两个以外，还有一个组件我们经常会用到。那就是 Icon（图标）。Flutter 为我们已经制作好了大量精美的 Icon 内置在 SDK 中，我们直接使用即可。
 
 ### Material Icon
 
@@ -1335,4 +1337,111 @@ class AwsomeIcons {
 
 ```
 
-上面仅仅声明了一些 Icon，这个最终还是要根据自己的需要来。Icon 作为矢量图，不会因为分辨率失真，能够极大的保证其清晰度，并且可以减少应用加载的速度，动手试试吧。
+上面仅仅声明了一些 Icon，这个最终还是要根据自己的需要来。Icon 作为矢量图，不会因为分辨率失真，能够极大的保证其清晰度，并且可以减少应用加载的速度。现在赶紧动手试试吧。
+
+## X.1.10 综合型部件 Container
+
+在刚学习 Flutter 的时候，Container 可能是我们使用最频繁的一个 Widget 了。它结合了 绘制、布局、以及 调整大小等诸多功能，可以说是万金油。然而过多的能力也导致它比较复杂，甚至有些反直觉，所以这一节我们将庖丁解牛，根据一些实际场景进行学习。
+
+进入 Container 源码查看我们可以发现，Container 作为一个综合型的 Widget 实际上是由多个 基本的 Widget 组合而成的。这些 Widget
+主要是 `LimitedBox`、 `ConstrainedBox`、`DecoratedBox` 三个能够对单个子 Widget 创建渲染对象的 Box，以及 `Align` 和 `Padding` 布局 Widget，以及处理旋转的 `Transform` Widget。让我们从这三个 Box 说起。
+
+我们已经熟悉 Flutter 中构建界面的代码，通过层层嵌套关系，来对界面进行描述。那么我们可以想象一个问题，当一个 Widget 被放入另外一个 Widget 中的时候，这个 Widget 应该占多大的空间呢，有些时候我们的 child Widget 并没有明确指定宽高，或者是有些时候我们希望让其宽高**约束**在一个范围之内，那么这个时候，就需要用到 `ConstrainedBox` 了。
+
+`ConstrainedBox` 实际上只关心一个参数，就是它的 constraints，我们通过传入 `BoxConstrains` 对其对它的约束进行设置。下面我们来看一看这个 `BoxConstrains` 的参数。
+- minWidth：最小宽度。
+- maxWidth：最大宽度。
+- minHeight：最小高度。
+- maxHeight：最大高度。
+
+这里很好理解，这些参数就会给这个盒子的大小限定在一个范围之内。由于 BoxConstrains 涉及到非常多的操作情况，我们这里不会完全进行介绍，会留到之后专门来介绍这个组件。我们先来看默认情况下，Container 的约束情况。我们可以简单将其分为两类：
+
+- Container 无 child：这种时候默认 Container 会尽可能大，占满其父组件
+- Container 有 child：这种时候将会尽可能缩小，到包裹其 child 为止。
+
+
+现在我们这里直接在 Scaffold 的 body 处放一个 Container。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.blue,
+      )
+    );
+  }
+```
+
+
+
+![container-no-constrains](./pic/container-no-constrains.png)
+
+我们可以看到，Container 在无边界约束条件下,不设置其宽高，Container 将会变得尽可能大，直到撑满父级。若是给其宽高，那么 Container 将会优先使用其宽高。我们再来看一下，在 Flex Widget 的约束中 Container 不设置其主轴高度的情况，我们使用 Column，并不给其主轴设置长度（无 height）。
+
+然后我们给其 child 一个 Text 组件显示一段文字，再来看看效果。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          color: Colors.blueAccent,
+          child: Text('Container'),
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/container_hasChild.png)
+
+可以看到 Container 已经缩小到刚好包裹住 Text 的状态了。不仅如此，我们还可以通过 BoxConstrains 来进行调整。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(minHeight: 100),
+          color: Colors.blueAccent,
+          child: Text('Container'),
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/container_constrain_minHeight.png)
+
+在上面我们通过 设置其 BoxConstrains 的最小高度为 100，我们可以看到这个 Container 在高度取自 minHeight 的 100 dp 了。  
+
+看到这里相信有一些人就已经在打歪主意了，你不是有 maxHeight，也有 minHeight 吗，嘿嘿，假如我给你传了一个 maxHeight < minHeight 的值，以子之矛攻子之盾，则何如？
+
+![](./pic/bad_constrains.png)
+
+那当然是，不可以的啦，不要这么干哦。那么最后我们再来看一种特殊情况，当 Container 放在 Flex 组件之中效果是什么样的。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          Container(
+            color: Colors.blue,
+          )
+        ],
+      ),
+    );
+  }
+```
+
+![container-flex-no-mainAxis-height](./pic/container-flex-no-mainAxis-height.png)
+
+由于在主轴上 Flex 组件希望自己的 children 尽可能小，但是优先使用其本身的高度，这里我们没有设置任何高度，所以这个 Container 的 height 就被缩减到了 0，也就看不见了。所以说，在 Flex 组件中，其 child 在主轴上必须要有高度，这一点对其他的 不确定大小的组件也适用。
+
+
+
+然后我们现在来看一下，Container 自身有哪些用处。我们先从定位说起，Container 是一个 单 child 的组件，它能够在内部对其 child 进行定位。也就是使用 alignment 属性。实际上从源码可以发现，它的对齐方式就是用 Align 实现的，那么这里就不再重复解释了。
+
+
+
