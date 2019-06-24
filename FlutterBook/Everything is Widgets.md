@@ -6,7 +6,7 @@
 
 实际上 Widget 有很多相通之处，当你对其中的基本组件熟悉之后，你会发现这种构建 UI 的方式非常的灵活、自由，能够让我们真正无拘无束地开发出奇妙的 UI 而不只是局限常规。任何复杂的事物都是由简单的事物堆积而成，在本章我将带领各位读者庖丁解牛地学习 Flutter 中的 Widgets，不仅会介绍重要 API，更多的结合实际场景的应用，通过这一章的学习，各位读者将能够拥有 快速上手任何 Widget 的能力。
 
-# X.1 基本 Widget
+# X.1 基础 Widget
 界面可以说是和用户最近的地方，一个精美的用户界一下就会吸引用户，这也是接触 Flutter 开发最有趣的一部分。通常拿到一个设计图，作为 UI 开发者我们首先考虑的是这两个问题：屏幕上应该有什么？它们又该放在哪？布局和显示被拆分成了两个问题，让后我们分别进行解决。
 
 对于 Flutter 来说这个问题被分解的相当彻底：一些组件只用于显示，例如按钮，文字，图片等，而另外一些组件不显示任何东西，他们的作用是对子组件进行布局，例如 行布局组件（row），列布局组件（column），单 child 对齐组件（align）。通过层级关系组成一个精美的页面。
@@ -1346,9 +1346,14 @@ class AwsomeIcons {
 进入 Container 源码查看我们可以发现，Container 作为一个综合型的 Widget 实际上是由多个 基本的 Widget 组合而成的。这些 Widget
 主要是 `LimitedBox`、 `ConstrainedBox`、`DecoratedBox` 三个能够对单个子 Widget 创建渲染对象的 Box，以及 `Align` 和 `Padding` 布局 Widget，以及处理旋转的 `Transform` Widget。让我们从这三个 Box 说起。
 
-我们已经熟悉 Flutter 中构建界面的代码，通过层层嵌套关系，来对界面进行描述。那么我们可以想象一个问题，当一个 Widget 被放入另外一个 Widget 中的时候，这个 Widget 应该占多大的空间呢，有些时候我们的 child Widget 并没有明确指定宽高，或者是有些时候我们希望让其宽高**约束**在一个范围之内，那么这个时候，就需要用到 `ConstrainedBox` 了。
+### ConstrainedBox
+
+如果要说 Container 用的最多的属性是什么，可能对于新手来讲肯定就是 width / height 了。它能够简单设置我们 Container 的大小。但是当你写 Flutter 代码比较多的时候，会发现这两个属性会在某种情况下失效。我们这一节将带你拨开迷雾。
+
+大家已经熟悉 Flutter 中构建界面的代码是通过层层嵌套关系，来对界面进行描述。那么我们可以想象一个问题，当一个 Widget 被放入另外一个 Widget 中的时候，这个 Widget 应该占多大的空间呢，有些时候我们的 child Widget 并没有明确指定宽高，或者是有些时候我们希望让其宽高**约束**在一个范围之内，那么这个时候，就需要用到 `ConstrainedBox` 了。
 
 `ConstrainedBox` 实际上只关心一个参数，就是它的 constraints，我们通过传入 `BoxConstrains` 对其对它的约束进行设置。下面我们来看一看这个 `BoxConstrains` 的参数。
+
 - minWidth：最小宽度。
 - maxWidth：最大宽度。
 - minHeight：最小高度。
@@ -1437,11 +1442,202 @@ Widget build(BuildContext context) {
 
 ![container-flex-no-mainAxis-height](./pic/container-flex-no-mainAxis-height.png)
 
-由于在主轴上 Flex 组件希望自己的 children 尽可能小，但是优先使用其本身的高度，这里我们没有设置任何高度，所以这个 Container 的 height 就被缩减到了 0，也就看不见了。所以说，在 Flex 组件中，其 child 在主轴上必须要有高度，这一点对其他的 不确定大小的组件也适用。
+由于在主轴上 Flex 组件希望自己的 children 尽可能小，但是优先使用其本身的高度，这里我们没有设置任何高度，所以这个 Container 的 height 就被缩减到了 0，也就看不见了。所以说，在 Flex 组件中，其 child 在**主轴**上必须要有高度，这一点对其他的 不确定大小的组件也适用。
+
+### BoxDecoration
+
+我们上面举的例子几乎就可以覆盖绝大多数情况了。剩下的可以在后面的练习中逐渐体会。现在我们要来把目光放到 Container 第二个很重要的作用 **装饰** 上了。
+
+在相册上经常会看见这样一个功能，在相片上添加一些边框效果，以及装饰。在 Container 中我们通过使用 decoration 这个属性来实现这些效果。decoration 实际上是使用 BoxDecoration 来实现的。我们还是先来看看它的属性。
+
+- color：给装饰设置颜色
+- image：给装饰设置一张图片。这里需要传入 DecorationImage
+- border：给 Container 设置一个 边框，这里主要设置的是样式、颜色以及宽度等
+- borderRadius：通过给边框设置弧度，这个属性通常被用于切割圆角
+- boxShadow：这个属性能够为盒子绘制一个阴影效果，在视觉上就会感觉它浮在屏幕上面
+- gradient：给盒子制作一个渐变色效果，使用了这个属性将会覆盖前面的 color 的效果，而 如果有 boxShadow 属性的话又会覆盖 gradient 效果。
+- backgroundBlendMode：它够在使用了 boxShadow 以及 gradient 时处理混合方式。
+- shape：用于控制这个 Container 是矩形的还是圆形的。
+
+你可能会问，为什么 Container 本身就具有 color 属性，为什么 decoration 还需要设置一个 Color 呢。当我们在 Container 中设置了 color 属性时，Container 实际上会默认帮我们创建一个 BoxDecoration 并设置其 color 属性。Flutter 做这一步处理的原因实际上是帮我们考虑了 color 属性的使用频率。我们频繁会用到 color 这个属性，假如还需要在 Container 中再嵌套一个 BoxDecoration 的话，就显得太麻烦了。
+
+那么你可能又会有疑问了。假如我们既设置了 color 属性，又设置了 decoration，Flutter 会如何处理这个冲突呢。结果可能有点出乎你的意料，假如你既设置了 color 属性，又设置了 decoration 那么就会产生冲突，直接显示 ErrorWidget。解决办法也很简单，只要你使用 decoration，那么就不要直接在 Container 中直接设置 color 属性即可。
+
+在 decoration 中其实 color 和 image 属性都挺简单的，只有一点需要注意的，image 中需要传入的是一个 `DecorationImage( image : ImageProvider )` 稍微比正常的 Image 要麻烦一点，这里就不深入去讲解了，我们来看更加常用的一个属性 border。
+
+Border 从字面意思上来讲就是边界的意思，在应用中 组件之间通常会明显标记出边界来进行相互区分。话不多说我们直接来看一段代码你就明白了。
+
+``` dart
+ Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          height: 200,
+          width: 200,
+          decoration: BoxDecoration(
+              color: Colors.redAccent,
+              border: Border.all(width: 5, color: Colors.blueAccent)),
+        ),
+      ),
+    );
+  }
+```
+
+![](./pic/decorate_box_border.png)
+
+我们在屏幕中心创建了一个 边长为 200 的红色正方形 Container。然后在其 border  属性上给了一个 Border.all 并设置了其宽度和颜色。现在我们来让这个 Container 的边角有一点弧度，让它看起来不那么尖锐。我们只需要设置设置其 borderRadius  即可。
+
+``` dart
+borderRadius: BorderRadius.circular(24)
+```
+
+然后我们就可以看到其边角产生了一个 24 的弧度。
+
+![decorate_box_border_radius](./pic/decorate_box_border_radius.png)
 
 
+
+现在我们已经学会了调整 Container 的边框样式。下面我们来使用阴影对 Container 做一些更高级的操作。
+
+![shadow](./pic/shadow.png)
+
+阴影是 Material Design 中一个非常重要的元素，我们可以使用它来表示面与面的高度。在上图中我们会发现从左至右这块白色平面逐渐"升起来"了，这就是阴影的作用。我们来看下面这个例子。
+
+![box_shadow](./pic/box_shadow.png)
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          height: 200,
+          width: 200,
+          decoration: BoxDecoration(
+            color: Colors.redAccent,
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.grey,
+                  offset: Offset(10, 10),
+                  blurRadius: 10,
+                  spreadRadius: 10)
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+我们在这里把之前关于 border 的相关代码去掉，并新增加了一个 boxShadow。这个属性将会接收一个 `List<BoxShadow>`，你可以放任意个阴影进行组合。我们这里使用了一个 灰色的 偏移量为 `Offset(10,10)` 的阴影。
+
+我们很容易在台灯下观察到影子有一个很有意思的现象，你可以拿手挡在台灯下试试。手离桌面越远那么这个影子就会越模糊，这样的现象实际上无形中给我们了一个暗示，也就是阴影越模糊，物体离平面就越高。而手离光源越近。挡住的光线部分就越多，影子就越大。所以我们可以通过控制阴影效果，给人一种高度的感觉。
+
+在 `BoxShadow` 中 `blurRadius` 将会控制其模糊值，值越大越模糊。而 `spreadRadius` 则会控制其大小，值越大，阴影越大。要注意的是，虽然我这里使用的 int 声明的值，然而实际上这里接收的是 double。这是因为 Dart 2.1 已经支持 int / double 互相转换了。
+
+除了阴影，渐变色也是我们时常会遇到的需求。BoxDecoration 中的 `gradient` 就能很好的满足我们这一点。我们还是来看一个小例子。
+
+![gradient](./pic/gradient.png)
+
+``` dart
+Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              Colors.red,
+              Colors.yellow,
+              Colors.blue
+            ])
+          ),
+        ),
+```
+
+在这段代码中，我们使用了线性渐变类 `LinearGradient` 作出了这个渐变效果。它是 `Gradient` 的一个实现类。 最简单的渐变色我们只需要传入 colors 告诉 Flutter 我们需要在哪些颜色之间过渡就行了。假如你对渐变色的位置有所要求的话，可以通过其 began / end 属性自由设置，传入一个定位信息即可。
+
+` Gradient` 是一个 2D 渐变类，它支持 下面几种渐变类型。
+
+- [LinearGradient] :线性渐变，通过 start / end 两个锚点进行渐变色过渡。
+- [RadialGradient] :径向渐变，以一个圆心/半径向外进行渐变色过渡。
+- [SweepGradient] :扫描渐变，这种渐变就和雷达图一样，扫出来一圈。
+
+在这一节我们并不会深入去讲每个属性，在学习的过程中动手试试，把所有属性都过一遍，自己才有比较深的印象，剩下的用到的时候查阅相关 api 即可。
+
+最后我们来谈谈形状。我们现在都很清楚，Container 是一个矩形区域，但是如果我想要一个圆形呢。很简单，在 BoxDecoration 中设置这一句代码就好了。
+
+`shape: BoxShape.circle`
+
+这样 Container 就会变成一个圆形。
+
+至此我们把装饰算是正式学完了。然而你可能会发现，除了 `decoration` 属性之外，还有一个 `foregroundDecoration`。为什么还要有两个相同类型的属性呢。
+
+如果你足够仔细应该已经察觉到了，当我们的 Container 有 child 的时候，`decoration` 的效果永远在 child 之下，就像我们下面这样。
+
+![background_decoration](./pic/background_decoration.png)
+
+如果你想要在 child 组件上层进行装饰的话，就可以通过使用 `foregroundDecoration` 来达到上层装饰的效果。
+
+### alignment
 
 然后我们现在来看一下，Container 自身有哪些用处。我们先从定位说起，Container 是一个 单 child 的组件，它能够在内部对其 child 进行定位。也就是使用 alignment 属性。实际上从源码可以发现，它的对齐方式就是用 Align 实现的，那么这里就不再重复解释了。
 
+### Transform
 
+实际上我们已经可以看到 Container 能够帮我们处理相当复杂的效果，而 Transform Widget 能够通过矩阵变换对其 child 做平移、旋转、缩放等更强的效果。我们这里的 transform 属性，实际上只是组合的 Transform Widget 而已。这个 Widget 实在是过于强大，我们在这里先了解它的一些作用，在之后的章节中，会详细讲解。
 
+``` dart
+Container(
+      color: Colors.blue,
+      width: 100.0,
+      height: 100.0,
+  		transform: Matrix4.rotationZ(3.14),
+    ),
+```
+
+![container_transform](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/container_transform.png)
+
+Container 中的 transform 其实并没有将 Transform 的能力完全组合过来。我们仅需要在其 Transform 属性中传入 Matrix4 即可。
+
+这里我们让这个 Container 沿着左上角旋转了 180 度，使用了 `Matrix4.rotationZ` 这个方法。你可能已经猜到它还有 `rotationX` 、`rotationY` 来旋转不同的轴。我在这里写了一个 Widget ,通过动画来表现。你可以将它抄下来，然后通过改变注释来切换旋转角，可以获得更加直观的感受。
+
+``` dart
+class _RotateWidgetState extends State<RotateWidget> with SingleTickerProviderStateMixin{
+  AnimationController _animationController;
+  Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(vsync: this, duration: Duration(seconds: 1));
+    _animation = Tween(begin: 0.0,end: 6.28).animate(_animationController);
+    _animationController.addStatusListener((status){
+      if(status == AnimationStatus.completed) _animationController..reset()..forward();
+    });
+    _animationController.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(animation: _animation, builder: (context, child){
+      return Container(
+        transform: Matrix4.rotationX(_animation.value),
+//        transform: Matrix4.rotationY(_animation.value),
+//        transform: Matrix4.rotationZ(_animation.value),
+        color: Colors.blue,
+        width: 100.0,
+        height: 100.0,
+      );
+    });
+  }
+}
+```
+
+### Container 小结
+我们这一节中我们粗略的介绍了 Container 的基本功能，它的功能太丰富以至于我们无法详细的讲解下去。作为一个基础组件之一，Container 通过组合了一系列基础的组件，来达到很方便使用的目的。这也是为什么 Flutter 新手特别喜欢使用 Container 的原因。
+
+然而 Container 也是最容易被滥用的 Widget 之一。由于其丰富的组合特性，我们经常可以在新手代码中看到大量 Container 嵌套。一会要限定某个 Widget 大小，我加一个 Container，另一会儿又要设置 Widget 的背景颜色，我又加个 Container。不一会，你会发现嵌套变得非常严重，而且由于大量使用 Container，整个 Widget tree 变得又臭又长，十分难以阅读。
+
+有丰富经验的 Flutter 工程师则会恰当使用 Widget。例如要限定某个组件的大小，他会直接使用 SizedBox，而要进行一些装饰，他会直接使用 DecorateBox...这样，用到的 Widget 就是一些基础的，功能单一的 Widget。你的代码的效果便能够一目了然。
+
+那什么时候使用 Container 呢，假如你刚好在某个地方需要对一个组件进行多个处理（设置装饰，限定大小，设置渐变，需要 padding 等等），那么你就可以使用 Container 优雅的一次性处理完这些效果了。
+
+那么，到这里我们的基础篇 Widget 是正式讲完了，你已经掌握了 Flutter 界面编程部分的核心知识，真棒，快给自己鼓个掌吧！要说光说不练假把式，真正的能力都是在实战中锻炼出来的。我们学习了这么多，现在就是时候用实战来检验你的学习效果了！
+
+## X.1.11 UI 实战
