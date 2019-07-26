@@ -1640,4 +1640,380 @@ class _RotateWidgetState extends State<RotateWidget> with SingleTickerProviderSt
 
 那么，到这里我们的基础篇 Widget 是正式讲完了，你已经掌握了 Flutter 界面编程部分的核心知识，真棒，快给自己鼓个掌吧！要说光说不练假把式，真正的能力都是在实战中锻炼出来的。我们学习了这么多，现在就是时候用实战来检验你的学习效果了！
 
-## X.1.11 UI 实战
+## X.1.11 实战篇 简单的UI页面
+
+相信大家在学习了这么多基础的 Widget 之后已经有点腻了，不光是要熟悉控件的作用，更重要的是能够将这些控件组合构建完整页面的能力，现在就来到了最关键的实战篇，我们将一起来实战一个完整的页面布局。
+
+![simple_ui_demo](./pic/simple_ui_demo.png)
+
+上面就是我们今天要实践的 UI 样例了，参考了虾米音乐的布局方式。上述使用的图标均为 Flutter 内置 Icon。在阅读详解之前请自己思考并动手尝试完成这个页面，效果会更好喔。
+
+让我们正式开始吧。
+
+首先还是搭建基本设施，这一步几乎每次都需要完成一遍，我在这里把代码直接给出来。
+
+``` dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(App());
+
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+```
+
+我们创建 Widget 的时候其实 IDE 给了很多方便的快捷键，比如说我要创建一个 StatelessWidget，那么我只需要输入 stl 然后按下回车，IDE 就会为我们自动搭建好快捷模版，就像下面这样。
+
+``` dart
+class  extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+```
+
+我们只需要填入类名即可，顺便一提创建 StatefulWidget 的快捷键是 stf。
+
+搭建好模版之后我们来开始思考这样一个页面该如何搭建。首先我们看到，这个 App 整体以暗色风格为主，所以我们应该把主题设为暗色。将 MaterialApp 的 theme 属性设为 `ThemeData.dark()`。
+
+我们在观察一个页面的时候，通常是从底至上，从上至下这样来的。首先我们可以明确这里应该分为两层，第一层是底部的背景层。这里看上去使用了一个渐变背景色。然后第二层就是分布了我们的各种图标和图片及文字等部分。
+
+当你脑海中有这样的分层意识了之后，要组合一个界面就已经成功了一半了。那么我们开始来构建底层部分吧。由于底层部分就是一个简单渐变背景色，还记得我们在 Container 中提到的装饰么，我们现在就要使用 DecorateBox 来完成这个效果。
+
+``` dart
+return Scaffold(
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+              Colors.black12,
+              Colors.black12,
+              Colors.black54,
+              Colors.black,
+            ])),
+        child: Container(),
+      ))
+```
+
+这里的渐变色从上至下，上面的颜色要亮一点，下面部分要黑一些，所以我们这里选择了线性渐变，然后设置其起点（begin）和终点（end）。现在你应该可以看到下面这样的画面。
+
+![decorate_box_gradient](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/decorate_box_gradient.png)
+
+然后我们可以来看上层，整体上是一个从上到下的列布局，我们大体可以这样分成几份。
+
+![demo_decomposition](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/demo_decomposition.png)
+
+那么最外层就应该是一个 Column。然后来建造每一列的控件就可以了。看到这里还没有结束，再仔细观察的话，我们会发现，整体的控件其实是有一个统一的左右间距的，所以在 Column 的外部应该还需要加一个 Padding 才行。那么这个页面的大的架子就出来了。
+
+``` dart
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+              Colors.black12,
+              Colors.black12,
+              Colors.black54,
+              Colors.black,
+            ])),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 28, right: 28),
+            child: Column(
+              children: <Widget>[  
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+看上去有些长，你可能已经开始抱怨，假如一直这么写下去，代码是得有多长，多么难以阅读啊。没关系我们还有这一招——拆！
+
+我们观察可以发现，大部分代码都是关于 DecoratedBox 的，我们完全可以把它拆成方法。
+
+``` dart
+Widget buildBackground(Widget child) => DecoratedBox(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+            Colors.black12,
+            Colors.black12,
+            Colors.black54,
+            Colors.black,
+          ])),
+      child: child);
+```
+
+我们创建一个叫做 buildBackground 的方法，然后把刚才的装饰器部分拆进去。然后回到之前的 build 函数中，使用这个方法来对背景进行装饰，而不是直接写装饰代码。
+
+``` dart
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: buildBackground(
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 28, right: 28),
+            child: Column(
+              children: <Widget>[],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+怎么样，现在是不是感觉整个 build 清爽很多呢。好，我们接下去继续开始写页面，首先看到顶部的三个 Icon。我们很容易就发现，它其实是一个行排列，所以这里使用 Row 来帮助布局。
+
+```dart
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: buildBackground(
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 28, right: 28),
+          child: Column(
+            children: <Widget>[
+              Row（
+                children: <Widget>[
+                  Icon(Icons.keyboard_arrow_down),
+                  Icon(Icons.hdr_weak),
+                  Icon(Icons.queue_music),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+现在应该可以看到顶部的三个 Icon 了，但是它并没有像我们想象中那样分布排列，而是挤在一起。还记得我们在讲解 Row 的时候讲到的那两根轴吗，一根主轴一根横轴。排列的方向即为主轴，与主轴垂直的即为横轴。现在很明显，是在排列方向上的对齐方式不正确，所以我们来调整主轴对齐方式。
+
+`  mainAxisAlignment: MainAxisAlignment.spaceBetween,`
+
+这样这三个图标应该和我们理想中的状态一样了。现在我们既然把这个 Row 看为一个整体，那么就可以把它拆出去。我来告诉你一个非常方便的方法，如果你和我一样，使用的 AndroidStudio 的话，那么你会在右边看到这样一个按钮。
+
+![flutter_outline](./pic/flutter_outline.png)
+
+Flutter Inspector 和 Flutter Outline 这两个都是我们开发 Flutter 应用程序的好帮手，而现在我们要用的就是 Flutter Outline 的一件拆分 Widget 功能。当我们把光标移到某个 Widget 的时候，Flutter Outline 同时也会把那一行 Widget 高亮标注，我们只需要点击一下上面方框内的箭头，就可以一件将这个 Widget 拆成一个方法。我们将这个 Row 拆出来的方法取名为 buildHeader，然后再填充回 Column 中。
+
+``` dart
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: buildBackground(
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 28, right: 28),
+            child: Column(
+              children: <Widget>[
+                buildHeader()
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+```
+
+这样依赖我们可以得到一个很清晰的代码结构，而且可以分别维护各自的组件！很棒对吧。接下来我们要做的是添加一个图片，我这里使用了一张矩形的图片。
+
+![](./pic/launching-flutter-12-at-mobile-world.png)
+
+要使用这张图片当然很简单，直接用 `Image.network` 传入图片网址就可以了。但是我们还需要解决一个问题，那就是，图片裁剪问题。最终显示的图像需要是一个正方形，所以必须要对到来的图片进行裁剪。还记得我们在讲解图片的时候讲到的 fit 属性吗，这个属性能够帮助我们裁剪图片。然而这里好像只用 fit 还是不行，我们还需要另外的组件来帮助控制。
+
+我们可以看到，无论是何宽高，图片的比例都需要 1:1，所以这里可以使用一个叫做 `AspectRatio` 的 Widget ，它能够让其 child 强制保持一定宽高比。你可以在其 aspectRatio 参数上使用 2/3 这样的来表示宽高比，我们这里是 1：1 所以就是 1。然后让 Image 按照 BoxFit.cover 来进行裁剪，代码如下。
+
+```dart
+AspectRatio buildImage() => AspectRatio(
+      aspectRatio: 1,
+      child: Image.network(
+        'https://bs-uploads.toptal.io/blackfish-uploads/blog/article/content/cover_image_file/cover_image/18126/cover-0408-FlutterMessangerDemo-Luke_Newsletter-30d5a65064b44f0ef56a801d4811964a.png',
+        fit: BoxFit.cover,
+      ),
+    );
+```
+
+还有一点就是在这两个列之间还有一定距离的间隙，我们这里假设 20 dp。所以这两个组件之间还需要一个 SizedBox 来为我们撑起一个高度。
+
+```dart
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: buildBackground(
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 28, right: 28),
+          child: Column(
+            children: <Widget>[
+              buildHeader(),
+              SizedBox(height: 20),
+              buildImage(),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+现在，hot reload 后你应该可以看到你的应用长成下面这个样子。
+
+![simple_demo_image_complete](./pic/simple_demo_image_complete.png)
+
+下面我们该来做这两行文字部分了，由于这两个还是一个列布局，我们想把它拆成一个控件，所以就还是让它继续列布局吧。
+
+``` dart
+Column buildTitle() => Column(
+        children: <Widget>[
+          Text(
+            'Flutter Guide',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text('One Punch Flutter'),
+        ],
+      );
+```
+
+第一行的文字我们对它加粗处理，通过 `style: TextStyle(fontWeight: FontWeight.bold),` 进行设置。
+
+然后还是一样，通过 SizedBox 撑起一个 8 dp 的高度。下面两个组件的思路和上面基本相同，我就不在赘述了，现在放上完整代码，你自己敲完之后对照着这份代码看看，还有没有可以精简改进的地方。
+
+``` dart
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: buildBackground(
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 28, right: 28),
+            child: Column(
+              children: <Widget>[
+                buildHeader(),
+                SizedBox(height: 20),
+                buildImage(),
+                SizedBox(height: 60),
+                buildTitle(),
+                SizedBox(height: 100),
+                buildPlayRow(),
+                SizedBox(height: 100),
+                buildShareRow(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildBackground(Widget child) => DecoratedBox(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+            Colors.black12,
+            Colors.black12,
+            Colors.black54,
+            Colors.black,
+          ])),
+      child: child);
+
+  Row buildHeader() => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Icon(Icons.keyboard_arrow_down),
+          Icon(Icons.hdr_weak),
+          Icon(Icons.queue_music),
+        ],
+      );
+
+  AspectRatio buildImage() => AspectRatio(
+        aspectRatio: 1,
+        child: Image.network(
+          'https://bs-uploads.toptal.io/blackfish-uploads/blog/article/content/cover_image_file/cover_image/18126/cover-0408-FlutterMessangerDemo-Luke_Newsletter-30d5a65064b44f0ef56a801d4811964a.png',
+          fit: BoxFit.cover,
+        ),
+      );
+
+  Column buildTitle() => Column(
+        children: <Widget>[
+          Text(
+            'Flutter Guide',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text('One Punch Flutter'),
+        ],
+      );
+
+  Row buildPlayRow() => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Icon(Icons.repeat),
+          Icon(Icons.skip_previous, size: 36),
+          Icon(Icons.play_arrow, size: 64),
+          Icon(Icons.skip_next, size: 36),
+          Icon(Icons.star)
+        ],
+      );
+
+  Row buildShareRow() => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Icon(Icons.arrow_downward),
+          Icon(Icons.message),
+          Icon(Icons.share),
+          Icon(Icons.more_horiz)
+        ],
+      );
+}
+```
+
+你应该已经发现，我们阅读一个 Widget 代码现在只需要横扫一遍 build 函数就能一目了然，需要调整哪个控件就直接去 buildXXX 方法修改就好了，这样代码可读性大大提高。
+
+#### 实战篇总结
+
+上面的页面练习算是一个小试牛刀，相信对你来说一定已经能够轻松驾驭了吧！可以说你已经迈进 Flutter 的第一道门槛了，后面还有很多精彩的内容带你深入 Flutter 的世界，你准备好了就开始吧！
+
+## X.2 你真的了解 Widget 吗
+
+在前面一章我们介绍了一些基本的 Widget 的用法，你现在应该可以自己编写一些简单界面了～是不是觉得离 Flutter 开发工程师又近了一步呢？如果说上一张只是皮毛，那么这一章则是带大家深入 Flutter 最重要的元素 Widget。
+
+我们很容易地就能够创建出 StatelessWidget，通过重写其 build 方法，我们先来回顾一下。
+
+``` dart
+
+```
+
