@@ -2007,13 +2007,115 @@ class HomeScreen extends StatelessWidget {
 
 上面的页面练习算是一个小试牛刀，相信对你来说一定已经能够轻松驾驭了吧！可以说你已经迈进 Flutter 的第一道门槛了，后面还有很多精彩的内容带你深入 Flutter 的世界，你准备好了就开始吧！
 
-## X.2 你真的了解 Widget 吗
+## X.2 深入探索 Flutter UI
+
+### X.2.1 StatelessWidget 和 StatefulWidget
 
 在前面一章我们介绍了一些基本的 Widget 的用法，你现在应该可以自己编写一些简单界面了～是不是觉得离 Flutter 开发工程师又近了一步呢？如果说上一张只是皮毛，那么这一章则是带大家深入 Flutter 最重要的元素 Widget。
 
-我们很容易地就能够创建出 StatelessWidget，通过重写其 build 方法，我们先来回顾一下。
+不管是创建一个页面，还是定义一个组件，我们很容易地就会想到创建一个 StatelessWidget，通过重写其 build 方法，我们先来回顾一下。
 
 ``` dart
-
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
 ```
+
+使用 stl 快捷生成一个 StatelessWidget，你一般来说只需要定义类名、build 返回的 Widget，最多再来一个成员变量就可以了。定义起来很简单，但是它的功能也十分单一。整个 Stateless 的思维方式就是简单的 f(Data) => UI，适合创建一些静态的东西，而且在 StatelessWidget 中所有成员变量必须是 final 的，也就是说一旦 Widget 被创建出来，就再也不能改变了。假如我们创建了一个不是 final 的成员变量，就会得到这样一个 `This class (or a class which this class inherits from) is marked as '@immutable'` 这样一个警告，也就是说这个类或者该类继承的父类不是不可变（immutable）的。这个特性适用于所有 Widget 的子类，但是我们知道在应用中肯定有用户交互，而且还有动画这样的东西，只是一个静态页面远远满足不了我们的需求，这怎么办呢。
+
+Flutter 在设计这一块的时候，实际上是借鉴了 React 的思想，它把这种需要变化着呈现给用户的部分抽了出来并把它叫做“状态”（State）。状态是可变的，而每次我们 build 的时候，通过当前的状态能够映射出当前状态下的 Widget 的样子。那么我们应该怎么做呢。
+
+很简单，我们需要一个 StatefulWidget！通过名字我们可以进行区分，StatelessWidget 是无状态的 Widget，而 StatefulWidget 是有状态的 Widget。下面我们来尝试创建一个 StatefulWidget。
+
+```dart
+class App extends StatefulWidget {
+  @override
+  _AppState createState() => _AppState();
+} 
+```
+
+要创建一个 StatefulWidget 我们需要编写两部分的代码，第一部分还是 Widget 部分，我们创建的 Widget 需要继承至 StatefulWidget。然后重写其 `createState` 方法。这个方法将会返回一个 StatefulWidget 专属的 State 对象。但是你只敲这段代码肯定会报错，因为我们现在还没定义这个 State。
+
+```dart
+class _AppState extends State<App> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+```
+
+现在我们为这个 StatefulWidget 创建了一个“专属”的 State，让其继承至` State<App>`，App 是指的我们的 Widget，然后就是熟悉的 build 方法。一个实用小技巧是通过 stf 关键字你可以快捷创建一个 StatefulWidget。
+
+我们目前还看不出这个 StatefulWidget 和之前的 StatelessWidget 到底有什么区别，那么我们来做一个 Counter App 吧！对，没错就是你创建好 App 之后自动生成的那段代码。
+
+![counter_app](./pic/counter_app.png)
+
+首先来分析一下这个页面。整个页面很明显，是一个 Scaffold 布局，顶部一个 AppBar，在它的 title 上显示一个 Text，然后屏幕中心也就是 body 部分，中间是一行文字 `You pushed this button X times` 这样文字。中间的 “次数” 就是我们的状态，每次点击底部的 FloatingActionButton 按钮都要让这个值 +1。相信你很快就能够完成这样的一个页面。
+
+``` dart
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  int counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Counter App'),),
+      body: Center(
+        child: Text('You pushed this button $counter times'),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: (){
+        counter++;
+      }),
+    );
+  }
+}
+```
+
+可以看到，Widget 部分是相当简单，重写一个 createState 方法也是模版类帮我们都做好的事情了，所以我们可以吧所有的关注点转移到 State 上。
+
+我们知道 Widget 是 immutable （不可变）的，所以没法对 Widget 的成员变量进行二次复制操作。但是 State 可以，所以我们这里在 State 中创建了一个 成员变量 	`counter` 然后在 `FloatingActionButton` 的 onTap 方法中令 counter 自增。
+
+看上去已经大功告成，但是当你敲完上面这段代码并运行后会发现一个尴尬的事。无论我们如何按这个 `FloatingActionButton` 页面上的数字一点变化都没有。难道是 counter 没有正确自增么。如果你在 onTap 中再增加一行 print 语句，每次点击按钮打印一下 counter 的值，那么你应该会发现，counter 的值确实是已经随着点击按钮增加了。这是为什么呢。
+
+在 Flutter 中有一个经典说法 f(State) = UI，Widget 把当前的状态 （State） 映射成为视图。但是你想一下，State 可能会做很多事，有些与视图有关有些无关，那什么时候应该刷新呢？是随时都刷新吗。
+
+当然不是的，我们只希望在特定的时候刷新视图就好了，这样就避免浪费性能。所以，在 Flutter 中我们需要一个 Trigger （触发器），来控制视图何时进行刷新。这个 trigger 就是 setState。我们在 FloatingActionButton 中加上下面这句话。
+
+``` dart
+floatingActionButton: FloatingActionButton(onPressed: (){
+        counter++;
+        setState(() {});
+      }),
+```
+
+现在你 hot reload 一下应用，就会发现屏幕上的数字已经变化了，而且你再次点击 浮动按钮，中间的数字将会相应并增加。
+
+刚才我们说了 setState 类似于一个 trigger，它是 State 类中已经定义好的一个方法，作用是标记当前的 Widget 需要被重新
+
+ build，然后触发了当前 Widget 的重构。这里可以看到，setState 传入了一个 `VoidCallback` ，它其实就是一个没有参数的方法而且不返回任何数据。你可以把 counter ++ 放进 setState 中，就像这样。
+
+``` dart
+floatingActionButton: FloatingActionButton(onPressed: (){
+        setState(() {
+          counter++;
+        });
+      }),
+```
+
+但是，调用 setState 你需要注意，这个 VoidCallback 中一定不能够有异步操作。否则将会抛出异常。假如你之前没有任何开发经验的话，可能会对“异步” 这个词语感到很懵逼。这里简单介绍一下异步与同步。
+
+我们知道，现在的计算机执行速度已经足够快，一般来说你执行一个简单方法在一瞬间就能够得到答案。比如我们的 counter++，对这个变量执行自增操作。那么这种能够在一瞬间执行完毕的就是同步操作，那什么是异步操作呢。我们可以想象这么一个场景，假如我们要发起一个网络请求，想要从服务器上获取一些数据，但是由于受网络限制（你的网速比较差），那么你可能会等很久才能收到服务器传来的数据，那么假如我们还是按照同步的方式逐句执行的话，必然这个运算就会卡住。这并不是我们想要看到的，所以我们会专门处理这些异步任务，它不会傻傻等待这个执行完，而是立刻执行下一个任务，之后再回来执行。常见的异步任务有网络请求，文件操作，以及一些耗时操作等。
+
+在 Flutter 中，所有异步方法都需要 async 关键字修饰方法体，并且一定会返回一个 Future（注意这里拼写不要看错）。在 setState 中会检查这个 VoidCallback 是否是一个 Future，来避免异步操作。
+
+另一个需要注意的是 setState 的时机，这还要从 State 的生命周期来说起。
 
