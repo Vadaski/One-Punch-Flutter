@@ -2235,3 +2235,7 @@ class _ScreenState extends State<Screen> {
     super.dispose();
   }
 ```
+
+到此我们 State 的生命周期部分就讲完了，相信你肯定中间有些部分还不太明白。没关系这很正常，到后面我们接触到这些东西之后，你就能够懂了。现在你可以结合下面这张图深入理解一下，并动手实验。
+
+![state_life_circle](./pic/state_life_circle.png)
