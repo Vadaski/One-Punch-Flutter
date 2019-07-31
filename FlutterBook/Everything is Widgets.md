@@ -2117,5 +2117,121 @@ floatingActionButton: FloatingActionButton(onPressed: (){
 
 在 Flutter 中，所有异步方法都需要 async 关键字修饰方法体，并且一定会返回一个 Future（注意这里拼写不要看错）。在 setState 中会检查这个 VoidCallback 是否是一个 Future，来避免异步操作。
 
-另一个需要注意的是 setState 的时机，这还要从 State 的生命周期来说起。
+那么还有一个问题，你肯定会问。我们通常创建 Widget 并不仅仅是一个空参构造方法就完了，肯定还带有一些 Widget 所需要的参数信息。但是现在 State 和 Widget 分离，它们根本就不在一个类中，我们如何在 State 中获取 Widget 中的数据呢。
 
+实际上，我们不需要担心这一点。 Flutter 在构建 State 的时候，就会把 Widget 绑定到 State 上去。我们只需要使用 `widget.XXX` 就能够访问 Widget 中的数据了。
+
+``` dart
+build(BuildContext context){
+  return Text(widget.Title);
+}
+```
+
+我们现在知道，当你有一些数据需要显示，而这些数据可能随时会变化，那么 State 就能够管理这些变化的数据，并且当数据改变时，能够适时通知界面刷新（setState）。这只是最基础的部分，当我们真正开发的时候可能会有更加复杂的需求。例如，在初始化 State 之后初始化数据，当页面被（pop）销毁的时候，我们可能想要释放资源，等等。这时候，我们会更加关注 State 的生命周期。现在，我将带你深入 State 构建流程。
+
+#### create：
+State 并不需要我们手动 new，而是由 StatefulWidget 初始化时 createState 来调用 State 的构造函数。同时在 State 构造方法初始列表中把当前的 Widget 传入 State 中。
+#### mounted：
+新创建的 State 将会与一个 BuildContext 对象绑定，这个关联是永久的，一个 State 被创建之后永远都不会更改其 BuildContext。这个时候 State 的状态 mounted (已安装)被设置为 true。
+#### initState：
+然后 Flutter 就会调用 State 的 initState 方法，我们可以在自己的 XXXState 中重写该方法即可。initState 方法在整个 State 的生命周期中**只会在这个时候被调用一次**，所以它专门被用来初始化一些数据（有些数据无法在构造函数中初始化，那么就可以在这里进行）。这个时候就已经可以访问到 context 和 widget 了。
+``` dart
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(vsync: this,duration: Duration(seconds: 1));
+    ...
+  }
+```
+
+#### [didChangeDependencies](https://api.flutter.dev/flutter/widgets/State/didChangeDependencies.html)：
+然后 Flutter 就会调用 [didChangeDependencies](https://api.flutter.dev/flutter/widgets/State/didChangeDependencies.html)，这个阶段通常用来获取inheritedWidget，现在你不知道这个是什么没有关系，后面我们会详细介绍。这个方法不仅在 initState 之后会调用，当 [BuildContext.inheritFromWidgetOfExactType](https://api.flutter.dev/flutter/widgets/BuildContext/inheritFromWidgetOfExactType.html) 方法调用并且 inherit 的 Widget 发生了改变，那么 didChangeDependencies 会再次被调用。
+#### build：
+当 initState 和 didChangeDependencies 都执行完毕后初始化就结束了。现在就可以调用 build 方法来构建这个 Widget。它将当前的状态映射为用户界面。而当我们状态发生改变时，例如调用了 setState，这时候就会重新运行 build 刷新界面，就像我们之前那样。所以 build 方法在 State 生命周期中可能会被调用多次。
+#### didUpdateWidget(Widget oldWidget)：
+这个是 Flutter 执行的优化策略之一。在 Dart 中，Object 类是所有类的基类，它提供了一个叫做 runtimeType 的东西来区别不同的类。在祖先 Widget 改变，并需要重建当前的 StatefulWidget 的时候，Flutter 会检查新的 Widget 和现有的 Widget 是否具有相同的 runtimeType，如果相同则会调用这个方法，而不是重新创建一个。
+
+我们知道，State 是长生命周期的对象，它不像 Widget 那样简单，创建和销毁一个 State 都是有一定代价的，那么我们就想要尽可能的复用以节省开销。所以当 Flutter 检查到更新前后 Widget runtimeType 相同就会选择复用。
+
+而在这里我们就需要重新初始化一些关键数据，你可以认为就是重建之后的的 initState。如果我们的状态依赖于一些可能会变化的对象，例如 Stream，那么我们就需要在原来的 State 中取消收听（unSubscribe），并在新的 State 中重新收听。
+
+当 didUpdateWidget 完成后，又回再次调用 build 方法构建更新后的 Widget，所以在这个阶段调用 setState 是无效的。
+
+当你开发过一段时间 Flutter 之后，你可能会觉得这个方法用的很少，不知道到底什么情况会调用 didUpdateWidget。所以我在这里专门举一个例子加深你的印象。
+
+``` dart
+class MyText extends StatefulWidget {
+  final int counter;
+
+  MyText({@required this.counter});
+
+  @override
+  _MyTextState createState() => _MyTextState();
+}
+
+class _MyTextState extends State<MyText> {
+
+  @override
+  void initState() {
+    super.initState();
+    print('initState');
+  }
+  
+  @override
+  void didUpdateWidget(MyText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('didUpdateWidget');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text('${widget.counter}');
+  }
+}
+
+```
+
+首先我们有这样一个 StatefulWidget，它接收一个 int 类型的值，我们暂且叫做 counter。然后在 State 中，我们看到 build 函数，返回一个 Text Widget，将 Widget 中获取到的 counter 显示出来。
+
+这时候我们重写它的 didUpdateWidget 方法，打印一下，为了证明 State 被复用了，我们同样也在 initState 中打印一下。
+
+现在就需要在外部改变传给这个 Widget 的值。
+``` dart
+class Screen extends StatefulWidget {
+  @override
+  _ScreenState createState() => _ScreenState();
+}
+
+class _ScreenState extends State<Screen> {
+  int counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: MyText(
+          counter: counter,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        counter++;
+        setState(() {});
+      })
+    );
+  }
+}
+```
+像这样，当每次 FloatingActionButton 按下时，都会执行 counter++，并调用 setState。我们知道，setState 将会重新调用 build 方法，那么这时候传递给 MyText 的数字就要比上次的多 1。这样势必会导致 MyText 重新构建。但是，每当我们按下按钮，terminal 只会打印 didUpdateWidget 这句话。这样就证明了 State 并没有重新构建，而是复用了。
+
+这里如果不跟着敲代码你是很难有深刻的体会的，一定要动手尝试！
+#### deactivate
+这个方法很少使用，它在 State 从 tree 中移除的时候被调用。这会有两种情况，第一种也是最常见的一种，当这个页面被销毁，那么整个页面 tree 都会被移除，State 会调用 deactivate 然后 dispose（销毁）。另外一种就是这个 State 从 tree 的一个节点移动到另一个节点的时候，首先需要将这个 State 从树中移除，然后再插入，所以会调用这个方法。
+#### dispose
+这个方法在 State 被销毁的时候调用，整个生命周期中只会在最后调用一次。你需要在这个方法中释放资源，例如取消收听 Animation，和流，释放 controller 等等。
+``` dart
+@override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+```
