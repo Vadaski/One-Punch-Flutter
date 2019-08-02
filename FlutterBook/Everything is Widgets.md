@@ -2009,7 +2009,7 @@ class HomeScreen extends StatelessWidget {
 
 ## X.2 深入探索 Flutter UI
 
-### X.2.1 StatelessWidget 和 StatefulWidget
+### X.2.1 从  StatelessWidget 到 StatefulWidget
 
 在前面一章我们介绍了一些基本的 Widget 的用法，你现在应该可以自己编写一些简单界面了～是不是觉得离 Flutter 开发工程师又近了一步呢？如果说上一张只是皮毛，那么这一章则是带大家深入 Flutter 最重要的元素 Widget。
 
@@ -2153,7 +2153,7 @@ State 并不需要我们手动 new，而是由 StatefulWidget 初始化时 creat
 
 我们知道，State 是长生命周期的对象，它不像 Widget 那样简单，创建和销毁一个 State 都是有一定代价的，那么我们就想要尽可能的复用以节省开销。所以当 Flutter 检查到更新前后 Widget runtimeType 相同就会选择复用。
 
-而在这里我们就需要重新初始化一些关键数据，你可以认为就是重建之后的的 initState。如果我们的状态依赖于一些可能会变化的对象，例如 Stream，那么我们就需要在原来的 State 中取消收听（unSubscribe），并在新的 State 中重新收听。
+而在这里我们就需要重新初始化一些关键数据，你可以认为就是重建之后的的 initState。如果我们的状态依赖于一些可能会变化的对象，例如 Stream，那么我们就需要在原来的 State 中取消收听（unSubscribe），并让新的 State 重新收听。
 
 当 didUpdateWidget 完成后，又回再次调用 build 方法构建更新后的 Widget，所以在这个阶段调用 setState 是无效的。
 
@@ -2227,7 +2227,7 @@ class _ScreenState extends State<Screen> {
 #### deactivate
 这个方法很少使用，它在 State 从 tree 中移除的时候被调用。这会有两种情况，第一种也是最常见的一种，当这个页面被销毁，那么整个页面 tree 都会被移除，State 会调用 deactivate 然后 dispose（销毁）。另外一种就是这个 State 从 tree 的一个节点移动到另一个节点的时候，首先需要将这个 State 从树中移除，然后再插入，所以会调用这个方法。
 #### dispose
-这个方法在 State 被销毁的时候调用，整个生命周期中只会在最后调用一次。你需要在这个方法中释放资源，例如取消收听 Animation，和流，释放 controller 等等。
+这个方法在 State 被销毁的时候调用，整个生命周期中**只会在最后调用一次**。你需要在这个方法中释放资源，例如取消收听 Animation 和 Stream，以及 dispose controller 等等。
 ``` dart
 @override
   void dispose() {
@@ -2239,3 +2239,115 @@ class _ScreenState extends State<Screen> {
 到此我们 State 的生命周期部分就讲完了，相信你肯定中间有些部分还不太明白。没关系这很正常，到后面我们接触到这些东西之后，你就能够懂了。现在你可以结合下面这张图深入理解一下，并动手实验。
 
 ![state_life_circle](./pic/state_life_circle.png)
+
+在这一章中，我们会见到很多使用 StatefulWidget 的来完成的组件或者精彩的页面。
+
+### 底部导航实践
+你已经学习了 StatefulWidget 的使用，它能够 cover 一些会变化的状态，让我们的 UI 不再死板单调，而是“动起来”！学了就要用！不断使用才能加深你的感触印象，那么我们马上就来实战有趣的页面吧。
+
+回想我们平时使用的 App，无论是 QQ、微信，还是微博、虾米音乐，这些 App 在交互的时候都有非常相似的地方。没错，我们已经非常习惯了，最底部一排总是一些按钮，这些按钮能够切换不同的页面。今天我们就来实战这样一个底部导航页面。我们先来看看它的样子。
+
+![bottom_navigation](./pic/bottom_navigation.png)
+
+我们看到，这里底部有四个导航按钮，顶部又是一个 AppBar，title 处的文字代表了当前处在哪个页面。那么这样一个导航页应该怎么做呢。在开始做之前我要先给你介绍一个组件 BottomNavigationBar。
+
+底部导航正是 Material 的经典设计之一，所以当然 Flutter 会内置这样一个组件供我们进行使用。我们之前接触过一个出镜率非常高的 Widget——Scaffold。这个脚手架已经帮我们搭建好了很多合适的布局，我们只需要在脚手架中填入想要的 Widget 即可。你可以发现，Scaffold 已经有 bottomNavigationBar 这个属性了。我们来看看这个控件应该怎么使用。
+
+#### BottomNavigationBar
+为了能够高度定制底部导航，BottomNavigationBar 拥有许多调整外形的属性，然而其基本属性实际上只有 3 个，了解它们你就可以让 BottomNavigationBar 工作了。我们来看看这三个属性。
+
+- currentIndex：这里传入一个 int 类型的值，代表当前哪个按钮被选中了，从 0 开始。我们现在需要点击一个按钮然后改变状态，所以这个 currentIndex 就是我们当前状态的一个变量。
+- items：这里需要传入一个 List<BottomNavigationBarItem>，也就是定义按钮的样式以及个数。我们等下再来详细看 BottomNavigationBarItem。
+- onTap：这里需要传入一个 ValueChanged<int>。这个是什么呢，其实就是一个方法，每次调用会传入一个 int，我们从这个方法名就能够推断出，当我们按下底部导航按钮时就会触发这个方法。传入的 int 值就代表了被点击的按钮的下标。
+
+现在不难看出，我们已经有一个沟通的桥梁，那就是 currentIndex，我们可以通过这个变量在上方页面和下面的底部导航之间建立一个联系。
+
+#### 界面拆分
+
+构造一个界面最直接的方法就是“拆”，页面拆成组件，组件拆成更细的东西。整个过程就像搭/拆积木一样，一层一层的来。我们来看这个界面应该如何拆呢。
+
+![44A9C1BC-1EDB-44ED-8D9A-241853A68762](/Users/litavadaski/Library/Containers/com.tencent.qq/Data/Library/Application Support/QQ/Users/1652219550/QQ/Temp.db/44A9C1BC-1EDB-44ED-8D9A-241853A68762.png)
+
+最大的架子其实就是这个 Scaffold 了，它把底部（bottomNavigationBar）和顶部（body）拆成了两部分。我们只需要在这两者之间建立一个联系就行了。
+
+#### 开始构建
+
+首先我们来构建顶部，这里可以看到顶部其实就是一个简单的 AppBar 布局，但是它却要依赖一个 Scaffold。我们可以选择把这个组件拆出来。
+
+``` dart
+class MyPage extends StatelessWidget {
+  final int index;
+  MyPage({this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('NO.$index Page'),
+      ),
+    );
+  }
+}
+```
+
+这个 MyPage Widget 很简单，就是把传入的 Text 显示在 AppBar 上就可以了。
+
+下面我们来构建整个的架构，首先要面临的就是对 Widget 的选择。这里应该用哪种 Widget 呢？🤔️
+
+不难发现，整个页面其实会随着用户交互状态发生变化。所以我们当然是选择 StatefulWidget 啦。我们先来构建这个底部导航的 item 部分。
+
+``` dart
+BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home),title: Text('home')),
+          BottomNavigationBarItem(icon: Icon(Icons.access_alarms),title: Text('time')),
+          BottomNavigationBarItem(icon: Icon(Icons.trip_origin),title: Text('Ai')),
+          BottomNavigationBarItem(icon: Icon(Icons.person),title: Text('me')),
+        ],
+      ),
+```
+
+实际上我们传入的 BottomNavigationBarItem 并不是一个 Widget，更像是 ViewModel 一样的东西。我们只需要专注 icon / title 这两个属性即可，它们都是 Widget。
+
+下面再做联动部分，我们现在有了一个中间桥梁 currentIndex，想一想怎么将 body 和下面的 item 联动起来呢。
+``` dart
+class Screen extends StatefulWidget {
+  @override
+  _ScreenState createState() => _ScreenState();
+}
+
+class _ScreenState extends State<Screen> {
+  int currentIndex = 0;
+  List<Widget> pages = List.generate(4, (index) => MyPage(index: index+1));
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: pages[currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home),title: Text('home')),
+          BottomNavigationBarItem(icon: Icon(Icons.access_alarms),title: Text('time')),
+          BottomNavigationBarItem(icon: Icon(Icons.trip_origin),title: Text('Ai')),
+          BottomNavigationBarItem(icon: Icon(Icons.person),title: Text('me')),
+        ],
+        onTap: (index) {
+          currentIndex = index;
+          setState(() {});
+        },
+      ),
+    );
+  }
+}
+```
+首先我们在 State 中声明了一个变量 currentIndex，并设为 0，代表我们默认在第一个页面。然后将 currentIndex 绑定到 BottomNavigationBar，这样每次我们改变 currentIndex，底部导航就能够一起变化。
+
+然后在 onTap 函数中，我们把 currentIndex 设为当前传入的 index，并 setState 刷新界面，这样就实现了底部切换。
+
+然后我们使用 List 去生成四个 MyPage，并把 index 传入 MyPage。接下来就只需要让 body 显示当前 index 下的 Widget 即可。整个导航就完成了！
+
+这样，每当我们点击某个按钮的时候，就会触发 onTap，并把当前的 index 传入。我们用这个 index 刷新 currentIndex，body 部分和 bottomNavigationBar 部分就会因为依赖 currentIndex 的改变而改变。
+
+怎么样，是不是对 StatefulWidget 感受更加清晰了呢。
