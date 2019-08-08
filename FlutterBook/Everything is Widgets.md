@@ -1163,7 +1163,7 @@ Image(
 
 然后我们需要在 pubspec.yaml 中声明我们的资源文件。如下图在 flutter 下一级按照该格式进行声明。
 
-![pubspec-asset](/workspace/flutter/One-Punch-Flutter/FlutterBook/pic/pubspec-asset.png)
+![pubspec-asset](./pic/pubspec-asset.png)
 
 然后我们运行 flutter packages get 或者 Android Studio 右上方的 get 按钮，刷新资源。
 
@@ -2242,8 +2242,8 @@ class _ScreenState extends State<Screen> {
 
 在这一章中，我们会见到很多使用 StatefulWidget 的来完成的组件或者精彩的页面。
 
-### 底部导航实践
-你已经学习了 StatefulWidget 的使用，它能够 cover 一些会变化的状态，让我们的 UI 不再死板单调，而是“动起来”！学了就要用！不断使用才能加深你的感触印象，那么我们马上就来实战有趣的页面吧。
+### X.2.2 底部导航实践
+你已经学习了 StatefulWidget 的使用，它能够根据一些会变化的状态重建界面，让我们的 UI 不再死板单调，而是“动起来”！学了就要用！不断使用才能加深你的感触印象，那么我们马上就来实战有趣的页面吧。
 
 回想我们平时使用的 App，无论是 QQ、微信，还是微博、虾米音乐，这些 App 在交互的时候都有非常相似的地方。没错，我们已经非常习惯了，最底部一排总是一些按钮，这些按钮能够切换不同的页面。今天我们就来实战这样一个底部导航页面。我们先来看看它的样子。
 
@@ -2266,7 +2266,7 @@ class _ScreenState extends State<Screen> {
 
 构造一个界面最直接的方法就是“拆”，页面拆成组件，组件拆成更细的东西。整个过程就像搭/拆积木一样，一层一层的来。我们来看这个界面应该如何拆呢。
 
-![44A9C1BC-1EDB-44ED-8D9A-241853A68762](/Users/litavadaski/Library/Containers/com.tencent.qq/Data/Library/Application Support/QQ/Users/1652219550/QQ/Temp.db/44A9C1BC-1EDB-44ED-8D9A-241853A68762.png)
+![bottomNavigationStructure](./pic/bottomNavigationStructure.png)
 
 最大的架子其实就是这个 Scaffold 了，它把底部（bottomNavigationBar）和顶部（body）拆成了两部分。我们只需要在这两者之间建立一个联系就行了。
 
@@ -2344,10 +2344,76 @@ class _ScreenState extends State<Screen> {
 ```
 首先我们在 State 中声明了一个变量 currentIndex，并设为 0，代表我们默认在第一个页面。然后将 currentIndex 绑定到 BottomNavigationBar，这样每次我们改变 currentIndex，底部导航就能够一起变化。
 
-然后在 onTap 函数中，我们把 currentIndex 设为当前传入的 index，并 setState 刷新界面，这样就实现了底部切换。
+然后在 onTap 方法中，我们把 currentIndex 设为当前传入的 index，并 setState 刷新界面，这样就实现了底部切换。
 
 然后我们使用 List 去生成四个 MyPage，并把 index 传入 MyPage。接下来就只需要让 body 显示当前 index 下的 Widget 即可。整个导航就完成了！
 
 这样，每当我们点击某个按钮的时候，就会触发 onTap，并把当前的 index 传入。我们用这个 index 刷新 currentIndex，body 部分和 bottomNavigationBar 部分就会因为依赖 currentIndex 的改变而改变。
 
-怎么样，是不是对 StatefulWidget 感受更加清晰了呢。
+怎么样，是不是对 StatefulWidget 感受更加深刻了呢。
+
+### X.2.2 为应用添加交互 Button
+为了让我们的应用更加具有可交互性，最常见的做法就是添加一些按钮给用户，点击之后再给予适当的反馈。
+
+在之前的学习过程中，我们已经见过了 FloatingActionButton，它能够在用户点击之后触发一个 onTap 的回调，我们能在这里做一些动作。Flutter 本身为我们提供了非常多的 Button 供选择。这一节我们将会详细学习一些常用的 Button。
+
+#### 凸起的按钮 RaisedButton
+我们知道通常按钮都会凸出来，Flutter 通过控制阴影来模拟这个效果，让一个 Button 看上去像是浮动在平面上方，按下去时就会弹起来，这就是 RaisedButton。我们来通过一个小 demo 看一下这个 button。
+
+``` dart
+RaisedButton(
+    onPressed: () {
+      print('user pressed');
+      },
+    child: Text("RaisedButton"),
+  ),
+```
+
+最简单的用法就只需要给其 onPressed 属性传入一个 VoidCallback 即可，当用户点击按钮就会触发这个 callback。RaisedButton 自定义效果非常丰富，这里我把它各个属性的效果都对应到下图上。
+
+![raised_button](./pic/raised_button.png)
+
+上面是一些常用的属性，但远远不止这些。Flutter 的强大之处就在于它是开源的。所有 UI 相关部分都由 dart 来实现。你可以直接 ctrl + 鼠标左键（mac 上是 command + 鼠标左键点击）就能进入这个类看到源码。甚至是直接修改源码以调整，都是可以的。
+
+在 RaisedButton 中需要注意的是它的 elevation 属性，它用于控制 Button 的阴影。我们通常的 Button 按下去希望它能够下沉，而 RaisedButton 被点击时看上去整个 button 像浮起来了一样。我们需要保证其 highlightElevation < elevation，当点击 button 时，高度变为 highlightElevation，这样就有 Button 被按下去的感觉了。
+
+#### 平板按钮 FlatButton
+如果你不想要按钮的凸起效果的话，那么就可以使用 FlatButton:
+
+![flat_button](./pic/flat_button.png)
+
+FlatButton 除了没有凸起感之外，其他用法和 RaisedButton 基本一致。
+
+#### 浮动按钮 FloatingActionButton
+这个 button 想必大家都不会陌生，我们常常在 Scaffold 中使用到它，然而并不止如此。我们已经对 Everything is Widget 这句话有很深的体会了，既然 FloatingActionButton 是一个 Widget 那么它就可以在任何需要 Widget 的地方使用。
+
+``` dart
+Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+          child: FloatingActionButton.extended(
+        tooltip: 'user tap',
+        onPressed: () {},
+        label: Text('FloatingActionButton'),
+        icon: Icon(Icons.access_alarms),
+        shape: StadiumBorder(side: BorderSide(color: Colors.white, width: 2)),
+      )),
+    );
+  }
+```
+
+我们这里尝试了 FloatingActionButton 的扩展样式，它不再有 child，而是叫做 label。label 左边是一个 icon，其实这里放任何 Widget 都可以，只是按照 Material 设计原则来说，左边应该是一个 icon。
+
+当我们的应用变得复杂，为了提升交互体验，就需要适当给用户一些提示。比如说这个按钮的作用是什么，可能用户并不清楚。我们可以**长按**这个 button 然后就会弹出一个 Tooltip，来告诉用户这个 button 究竟是做什么用的。我们只需要在 tooltip 属性上设置一个 String 就可以获得下面这个长按效果。
+
+![floating_action_button_tooltip](./pic/floating_action_button_tooltip.png)
+
+这个属性在很多 Widget 中都有，很方便就可以创建一个 tooltip。你也可以通过 Tooltip Widget 来自定义一个。
+
+但是需要注意的是，MaterialDesign 建议一个屏幕上只有一个 FloatingActionButton，如果存在复数的浮动按钮，可能需要将其 heroTag 属性设为 null。关于这一点我们之后会在 Hero 处进行讲解。
+
+#### OutLineButton 和 IconButton
+Flutter 为 Button 提供了不同的样式，如果你想要让按钮外部有 border 的话，也可以直接使用 OutLineButton。除此之外 IconButton 也是非常常见的，它们的用法和之前非常相似，我们只需要了解它们长什么样子就可以了。
+
+![outline_button_icon_button](./pic/outline_button_icon_button.png)
+
