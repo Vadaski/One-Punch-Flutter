@@ -2417,3 +2417,4 @@ Flutter 为 Button 提供了不同的样式，如果你想要让按钮外部有 
 
 ![outline_button_icon_button](./pic/outline_button_icon_button.png)
 
+至此，Button 篇就结束了，作为和用户交互的一个重要组成，我建议在阅读本节之后，都去刷一刷 api，加深对每个属性的印象（因为它们实在是太过于相似了），当真正需要使用的时候才能够知道当前最适合的样式该使用哪个 button。
