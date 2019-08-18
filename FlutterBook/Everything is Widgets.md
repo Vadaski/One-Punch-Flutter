@@ -2418,3 +2418,481 @@ Flutter 为 Button 提供了不同的样式，如果你想要让按钮外部有 
 ![outline_button_icon_button](./pic/outline_button_icon_button.png)
 
 至此，Button 篇就结束了，作为和用户交互的一个重要组成，我建议在阅读本节之后，都去刷一刷 api，加深对每个属性的印象（因为它们实在是太过于相似了），当真正需要使用的时候才能够知道当前最适合的样式该使用哪个 button。
+
+### X.2.3 文本输入 Textfield
+
+在上一节我们已经学习了一系列按钮，它是与用户交互的一个重要方式，但是光是按钮还远远不够。我们很多时候还需要获取用户输入，比如当我们聊天的时候，我们需要一个输入框。本节将会介绍 Flutter 中的 输入框 —— TextField。
+
+只需要一行代码，你就可以创建出一个输入框。
+
+`TextField()`
+
+![textfield](./pic/textfield.png)
+
+上面这个效果只需要一个 TextField Widget 就能实现，你可以在输入框输入点东西了。假如这个时候，我们在登陆页面需要输入账号密码要使用 TextField，通常想要对当前的输入进行验证。比如密码位数，邮箱格式是否合法等等，这个时候就需要获取每一次输入之后输入框中的内容，该怎么做呢。 
+
+``` dart
+TextField(
+    onChanged: (text){
+      if(text.length<8){} //hint user
+      },
+   ),
+```
+
+我们可以在 TextField 中获得 onChanged 回调，它会在每次文字被改变的时候调用，并将当前输入框的文字输入进去，这样我们就能处理当前文字了。
+
+除了 onChange 回调以外还有下面几个回调：
+- onTap：当 TextField 被点击时触发。通常在自定义输入的时候会需要用到这个回调。
+- onSubmitted：当点击确认或者是键盘上的回车时，会触发这个回调。你可以在这里拿到当前 TextField 储存的用户输入的 String。
+- onEditingComplete: 同样也是在用户点击确认或者键盘上回车会触发这个回调，不过这个就是一个 VoidCallback，如果你不需要知道当前输入了什么的话，就可以使用这个回调。
+
+如果我们还想对 TextField 的内容进一步操作的话，就需要配合 TextEdingController 来做。
+
+```dart
+class Screen extends StatefulWidget {
+  @override
+  _ScreenState createState() => _ScreenState();
+}
+
+class _ScreenState extends State<Screen> {
+  TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextField(
+          controller: _textEditingController,
+        ),
+      ),
+    );
+  }
+}
+```
+
+我们在 State 中创建了一个 TextEditingController，并把它绑定到 TextField 中，现在我们来看看如何获取它的值。
+
+`_textEditingController.value.text`
+
+直接可以获取当前输入框内的文字信息。
+
+`_textEditingController.value = TextEditingValue(text: 'hello world');`
+
+你还可以直接覆盖当前 TextField 的内容。
+
+`_textEditingController.clear();`
+
+ 或者直接清除当前输入框的内容。
+
+ 你需要注意的是，只要使用了 TextEditingController 就必须在 dispose 中释放资源。
+
+ ``` dart
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+ ```
+
+#### 焦点处理 FocusScope / FocusNode
+
+在 Flutter 中我们把用户点击文本框，使其能够接受输入时称为“获得焦点”。通常我们会需要对焦点进行处理，比如在登陆的时候，我们输入账号后，点击确认后就希望光标直接跳到密码框，然后输入密码，再点击确认就发起一个登陆请求。这时候我们就需要对 TextField 进行聚焦/失焦处理。我们来看看一些具体情况应该如何做。
+
+#### 自动聚焦
+有时候我们希望，打开页面之后，自动聚焦 TextField，这样就免去用户再点击触发聚焦的操作了。我们可以使用 autofocus 属性。
+
+`TextField(autofocus: true,);`
+
+#### 自定义焦点
+如果我希望通过一个按钮，来触发某个特定的 TextField 应该怎么做呢？
+
+首先我需要给 TextField 绑定一个 FocusNode。
+
+``` dart
+class _ScreenState extends State<Screen> {
+  TextEditingController _textEditingController;
+  FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _textEditingController = TextEditingController();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextField(
+          controller: _textEditingController,
+          focusNode: _focusNode,
+        ),
+      ),
+    );
+  }
+
+  ...
+```
+
+这样我们就可以知道到底是哪个 TextField。然后我们通过 FocusScope 来聚焦具体的 TextField。
+
+`FocusScope.of(context).requestFocus(_focusNode);`
+
+这里的 `FocusScope.of(context)` 代表了当前页面的 FocusScope，我们直接通过 context 来寻找到，而不是手动创建一个。
+
+```dart
+class _ScreenState extends State<Screen> {
+  TextEditingController _textEditingController;
+  FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _textEditingController = TextEditingController();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextField(
+          controller: _textEditingController,
+          focusNode: _focusNode,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(onPressed: (){
+        FocusScope.of(context).requestFocus(_focusNode);
+      }),
+    );
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+}
+```
+这样，我们就可以在点击浮动按钮之后聚焦这个 TextField 了。
+
+既然可以聚焦，那失焦当然也很好做啦。
+
+`_focusNode.unfocus();`
+
+只需要让绑定的那个 FocusNode 去 unfocus 就可以了。
+
+#### 输入框样式
+刚才讲的都是关于 TextField 的功能相关的东西，现在来讲一下关于它的样式。
+
+主要样式在它的 InputDecoration 中进行设置。
+
+``` dart
+TextField(
+          decoration: InputDecoration(
+            hintText: '请输入密码',
+            fillColor: Colors.blueAccent.withOpacity(0.4),
+            filled: true,
+            border: InputBorder.none,
+          ),
+        ),
+```
+
+![input_decoration](./pic/input_decoration.png)
+
+通过 hintText 我们可以在用户输入之前显示一段提示文字。除此之外还有 labelText(标签文字),helperText（帮助文字），你可以自己试着填一下看看效果，UI 方面还是直观的看印象更加深刻。
+
+我们现在只学习了 TextField 的基本功能，在后面的实战中将会使用到更加定制化的功能。
+
+### X.2.4 Material 的经典 Tab 导航
+在 Material Design 中，它的经典导航方式并不是底部导航，而是 Tab 导航。虽然国内 app 设计更加倾向于 Apple 的设计风格，但是我们还是能够经常见到 tab 导航设计的。例如今日头条的首页，掘金首页都能够看到 Tab 导航的设计。这一节我们就来创建下面这样一个 Tab 导航页面。
+
+![tabbar](./pic/tabbar.png)
+
+在 Flutter 中，Tab 导航通常由三部分组成：
+- TabController：用来控制 tab 跳转的控制器，需指定 tab 个数。
+- TabBar：用来展示顶部可供导航的 Tab，需要绑定 TabController。
+- TabBarView：用来展示某个 tab 所对应的页面，需绑定 TabController。
+
+#### 创建 TabController
+由于 Tab 导航会随着点击不同的 Tab 或者滑动 TabBarView 切换不同的页面，所以这里应该是使用 StatefulWidget。首先我们在 State 中创建一个 TabController。
+
+``` dart
+class _ScreenState extends State<Screen> with SingleTickerProviderStateMixin{
+  TabController _tabController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+```
+
+由于 Tab 切换过程涉及到动画，所以我们需要让其混入一个 SingleTickerProviderStateMixin。然后在 State 中创建变量 `{
+  TabController`，但是现在还无法初始化。
+
+我们需要在 initState 中才能进行初始化，然后设置其 tab 的个数（length）为 3，然后接受这个 State 的 vsync 信号。这个信号是从我们 with 的 SingleTickerProviderStateMixin 中来的。
+
+在创建的时候我们就可以同步把释放过程写了，这两个过程其实是相对应的。所以在 `dispose` 方法中释放这个 tabController 的资源。
+
+#### 创建 TabBar
+现在我们可以创建一个 TabBar 并绑定 TabController。
+
+``` dart
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('TabBar'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(
+              icon: Icon(Icons.trip_origin),
+              text: 'No.1',
+            ),
+            Tab(
+              icon: Icon(Icons.save),
+              text: 'No.2',
+            ),
+            Tab(
+              icon: Icon(Icons.keyboard),
+              text: 'No.3',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+无论是 Scaffold 的 appBar 还是 AppBar 的 bottom，我们不能直接在这里放一般的 Widget，而必须要是实现了 PreferredSizeWidget 的 Widget。AppBar 和 TabBar 都实现了这一点，这里我们把 TabBar 放在 AppBar 的 bottom 位置上。并在 tabs 中传入了 3 个 Tab Widget（这里除了 Tab 还可以放一般的 Widget）然后绑定 TabController。
+
+
+#### 创建 TabBarView
+现在我们需要通过 TabBarView 来展示 tab 对应的页面。
+
+``` dart
+body: TabBarView(
+        controller: _tabController,
+        children: [
+          Center(
+            child: Icon(Icons.trip_origin),
+          ),
+          Center(
+            child: Icon(Icons.save),
+          ),
+          Center(
+            child: Icon(Icons.keyboard),
+          ),
+        ],
+      ),
+```
+这里的 children 传入了一个数组，还是按照其先后顺序和 Tab 相对应，Center 下就是一个页面，还是同样绑定同一个 TabController 就可以了。
+
+现在 hot restart 一下，你的 Tab 导航应该就能够正常工作了。
+
+#### 更简便的 DefaultTabController
+如果你觉得创建一个 TabController 稍微有些麻烦的话，还可以使用一种更简单的方法——DefaultTabController。
+
+``` dart
+class Screen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('TabBar'),
+          bottom: TabBar(tabs: [
+            Tab(
+              icon: Icon(Icons.trip_origin),
+              text: 'No.1',
+            ),
+            Tab(
+              icon: Icon(Icons.save),
+              text: 'No.2',
+            ),
+            Tab(
+              icon: Icon(Icons.keyboard),
+              text: 'No.3',
+            ),
+          ]),
+        ),
+        body: TabBarView(children: [
+          Center(
+            child: Icon(Icons.trip_origin),
+          ),
+          Center(
+            child: Icon(Icons.save),
+          ),
+          Center(
+            child: Icon(Icons.keyboard),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+```
+使用它只需要把它套在 TabBar 和 TabBarView 的祖先节点上就好了，所以这里我们套在 Scaffold 外面，以保证 TabBar 和 TabBar View 都在 DefaultTabController 节点之下。DefaultTabController 只需要告诉它 tab 的长度就行了，实际上它就是一个代理类。
+
+#### 单独使用 TabBar
+刚才的例子中，我们是在 AppBar 下的 bottom 使用的 TabBar，但是如果我只想要 TabBar 就像下面这样呢。
+
+![tabbar_custom_style](./pic/tabbar_custom_style.png)
+
+这种时候就只有自定义 TabBar 了，TabBar 本身是不带颜色的，上面的蓝色其实用的 AppBar 的背景色，所以我们要实现上面这个效果还得使用 DecoratedBox。
+
+``` dart
+class Screen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            DecoratedBox(
+              decoration: BoxDecoration(color: Colors.blueAccent),
+              child: Padding(
+                padding:
+                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                child: TabBar(
+                  tabs: [
+                    Tab(
+                      icon: Icon(Icons.trip_origin),
+                    ),
+                    Tab(
+                      icon: Icon(Icons.save),
+                    ),
+                    Tab(
+                      icon: Icon(Icons.keyboard),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Center(
+                    child: Icon(Icons.trip_origin),
+                  ),
+                  Center(
+                    child: Icon(Icons.save),
+                  ),
+                  Center(
+                    child: Icon(Icons.keyboard),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+```
+
+我们其实可以用 Column 来完成这样一个布局。这里的代码稍微看一下相必是不难理解的，有一点我需要解释一下，关于在 Padding 中使用了`MediaQuery.of(context).padding.top`，这是什么呢。
+
+我们知道现在手机有很多种屏幕，例如 iphoneX 的异形屏，或者是水滴屏，我们都需要对这些奇怪的形状进行适配。在 Flutter 中，我们可以通过 MediaQuery.of(context).padding 来拿到各个奇怪形状的高度，比如这里我需要拿顶部的异形屏高度，所以用了 top。实际上 Flutter 也提供了一个更加方便的 Widget—— SafeArea。 在这个例子中，我们可以把 Padding 换成 
+
+`SafeArea(bottom: false,)`
+
+这样我们就能保证不被异形屏遮挡关键部分了。
+
+但是如果我们有特殊需求，比如说我想要通过点击某个按钮让 tab 跳转的话，还是需要使用普通的 TabController 的。`_tabController.animateTo(1)`。
+
+#### 保存 TabBarView 中的状态
+实际上 TabBarView 并不会一次性把所有 State 初始化，而是懒加载的。当我们点击一个 Tab 的时候，会全部从新创建一个对应的 View，当切换成功后，则会把之前的那个 View 给 dispose 掉释放资源。这样以来，我们之前页面做的所有操作（状态变化）都会丢失，可能会给用户造成一个不好的体验。但是总的来说这还是一件好事，我们一般是不用考虑这里的性能优化的。
+
+这样说你可能还是很难想象，什么是状态丢失？那么我们先一起来创建一个有状态的页面。
+
+``` dart
+class CounterScreen extends StatefulWidget {
+  @override
+  _CounterScreenState createState() => _CounterScreenState();
+}
+
+class _CounterScreenState extends State<CounterScreen> {
+  int _counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text('$_counter'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _counter++;
+          setState(() {});
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+这个页面我们已经不是第一次见了，就是在屏幕中心显示一个数字，然后点击按钮使其增加。然后我们把这个替换进之前的 TabBarView 中。
+
+``` dart
+TabBarView(
+      children: [
+            CounterScreen(),
+            CounterScreen(),
+            CounterScreen(),         
+            ],
+      ),
+```
+
+现在 hot restart 之后应该是这样的一个页面。
+
+![tab_counter_demo](./pic/tab_counter_demo.png)
+
+现在你在第一个页面点击底部的浮动按钮。页面中心的数字对应就会增加，这很好。然后你试着切换到中间的页面，再切换回来，会发生什么事呢。
+
+是的，中间的数字不再是之前我们按下的数字，而是初始值了，状态被清除了！那我们现在应该如何让状态不被回收掉呢。
+
+很简单，使用 AutomaticKeepAliveClientMixin!在我们想要保存状态的页面中（因为有状态，所以肯定是 StatefulWidget），让 State 去 with AutomaticKeepAliveClientMixin，并重写 wantKeepAlive 方法，强制返回 true 就行了。
+
+``` dart
+class _CounterScreenState extends State<CounterScreen> with AutomaticKeepAliveClientMixin{
+  int _counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text('$_counter'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _counter++;
+          setState(() {});
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+}
+```
+
+现在，这个页面再被切换的时候，它的状态也不会丢失。同样的，这个保存状态的方法也适用于 PageView 等 XXXView 的情况。
